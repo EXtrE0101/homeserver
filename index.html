@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HomeServer Secure Portal</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+  <title>Home Server Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>">
   <style>
     :root {
       --bg: #09090b;
@@ -15,6 +15,7 @@
       --accent: #3b82f6;
       --accent-hover: #2563eb;
       --green: #22c55e;
+      --orange: #f59e0b;
       --red: #ef4444;
     }
 
@@ -39,9 +40,9 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 32px;
+      padding: 36px 32px;
       width: 100%;
-      max-width: 440px;
+      max-width: 480px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
       text-align: center;
     }
@@ -50,7 +51,7 @@
       position: relative;
       width: 64px;
       height: 64px;
-      margin: 0 auto 16px;
+      margin: 0 auto 20px;
     }
 
     .spinner {
@@ -67,40 +68,70 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 26px;
+      font-size: 28px;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    h1 {
-      font-size: 20px;
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
       font-weight: 600;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    .status-connecting {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .status-maintenance {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-online {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
     }
 
     p.subtitle {
-      font-size: 13.5px;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-
-    .input-field {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: #09090b;
-      border: 1px solid var(--border);
-      color: var(--text);
       font-size: 14px;
-      margin-bottom: 14px;
-      outline: none;
-      transition: border-color 0.2s;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
     }
 
-    .input-field:focus {
-      border-color: var(--accent);
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: #27272a;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--orange);
+      width: 100%;
+      transition: width 1s linear;
     }
 
     .primary-btn {
@@ -125,30 +156,70 @@
       background: var(--accent-hover);
     }
 
+    .secondary-btn {
+      width: 100%;
+      background: #27272a;
+      color: var(--text);
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid #3f3f46;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .secondary-btn:hover {
+      background: #3f3f46;
+    }
+
     .quick-links {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 14px;
+      gap: 10px;
+      margin-top: 18px;
     }
 
     .sub-btn {
       background: #27272a;
       color: #e4e4e7;
       text-decoration: none;
-      padding: 10px;
+      padding: 12px 10px;
       border-radius: 8px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 500;
       border: 1px solid #3f3f46;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: background 0.2s;
     }
 
     .sub-btn:hover {
       background: #3f3f46;
+      border-color: #52525b;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #09090b;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 14px;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
     }
 
     .error-msg {
@@ -157,44 +228,95 @@
       margin-bottom: 12px;
       display: none;
     }
+
+    .info-card {
+      background: #111215;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 12.5px;
+      color: var(--muted);
+      text-align: left;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container" id="auth-box">
-    <div class="icon-center" style="position:static; transform:none; font-size:40px; margin-bottom:12px;">🔒</div>
-    <h1>HomeServer Gate</h1>
-    <p class="subtitle">Enter master password to access server</p>
+  <!-- VIEW 1: CONNECTING / RESOLVING (Default for Public Visitors) -->
+  <div class="container" id="view-connecting">
+    <div class="spinner-wrapper">
+      <div class="spinner"></div>
+      <div class="icon-center">🚀</div>
+    </div>
+    <div class="status-badge status-connecting">⚡ Connecting to Home Server</div>
+    <h1 id="conn-title">Connecting...</h1>
+    <p class="subtitle" id="conn-sub">Resolving live server connection from cloud gateway.</p>
+  </div>
+
+  <!-- VIEW 2: BEAUTIFUL MAINTENANCE / AUTO-RECONNECT (When Server is Down or Rebooting) -->
+  <div class="container" id="view-maintenance" style="display:none;">
+    <div style="font-size: 48px; margin-bottom: 16px;">🛠️</div>
+    <div class="status-badge status-maintenance">🟡 Temporary Maintenance / Rebooting</div>
+    <h1>System Maintenance</h1>
+    <p class="subtitle">Our server is currently rebooting or undergoing scheduled updates. Services will automatically reconnect shortly.</p>
+
+    <div class="info-card">
+      <strong>ℹ️ Automatic Reconnect:</strong><br>
+      You do not need to refresh. This page will constantly poll the server and automatically open your destination as soon as it's online.
+    </div>
+
+    <div class="progress-bar-bg">
+      <div id="retry-progress" class="progress-bar-fill"></div>
+    </div>
+    <div style="font-size: 12px; color: var(--muted); margin-bottom: 20px;" id="retry-timer-text">
+      Rechecking server in <strong>10</strong> seconds...
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="primary-btn" onclick="retryConnectionNow()">🔄 Check Connection Now</button>
+      <button class="secondary-btn" onclick="showAuthBox()">🔐 Administrator Login</button>
+    </div>
+  </div>
+
+  <!-- VIEW 3: MANUAL HUB DIRECTORY (?pause=1) -->
+  <div class="container" id="view-directory" style="display:none;">
+    <div style="font-size: 42px; margin-bottom: 12px;">🌐</div>
+    <div class="status-badge status-online">🟢 Server Online & Ready</div>
+    <h1>Home Server Hub</h1>
+    <p class="subtitle">Select a website or service to launch:</p>
+
+    <div class="quick-links">
+      <a id="lnk-site1" class="sub-btn" href="#">🌐 Website 1</a>
+      <a id="lnk-site2" class="sub-btn" href="#">🌐 Website 2</a>
+      <a id="lnk-site3" class="sub-btn" href="#">🌐 Website 3</a>
+      <a id="lnk-site4" class="sub-btn" href="#">🌐 Website 4</a>
+      <a id="lnk-cpanel" class="sub-btn" href="cpanel.html">⚙️ WP cPanel</a>
+      <a id="lnk-terminal" class="sub-btn" href="#" onclick="routeToAdmin(event, 'terminal')">💻 Terminal</a>
+    </div>
+
+    <div style="margin-top: 24px; font-size: 12px; color: var(--muted);">
+      <a href="javascript:void(0)" onclick="showAuthBox()" style="color: #60a5fa; text-decoration: none;">Administrator Access &rarr;</a>
+    </div>
+  </div>
+
+  <!-- VIEW 4: ADMIN AUTH GATE (Only for Terminal / Panel / Admin Management) -->
+  <div class="container" id="view-auth" style="display:none;">
+    <div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
+    <h1>Admin Authentication</h1>
+    <p class="subtitle">Enter master password for administrative access</p>
 
     <div id="auth-error" class="error-msg">Incorrect password. Please try again.</div>
 
     <form onsubmit="handlePortalAuth(event)">
       <input type="password" id="portal-pass" class="input-field" placeholder="Master Password" required autofocus autocomplete="current-password">
-      <button type="submit" class="primary-btn">🔓 Unlock & Connect</button>
+      <button type="submit" class="primary-btn">🔓 Unlock & Proceed</button>
     </form>
 
-    <div style="margin-top:16px; font-size:11.5px; color:var(--muted);">
-      <a href="cpanel.html" style="color:#60a5fa; text-decoration:none;">Open WordPress cPanel &rarr;</a>
-    </div>
-  </div>
-
-  <div class="container" id="redirect-box" style="display:none;">
-    <div class="spinner-wrapper">
-      <div class="spinner"></div>
-      <div class="icon-center">🚀</div>
-    </div>
-    <h1 id="red-title">Connecting...</h1>
-    <p class="subtitle" id="red-sub">Resolving live tunnel from GitHub Gist</p>
-
-    <div class="quick-links" id="quick-links-grid" style="display:none;">
-      <a id="lnk-cpanel" class="sub-btn" href="cpanel.html">🌐 WP cPanel</a>
-      <a id="lnk-terminal" class="sub-btn" href="#">💻 Terminal</a>
-      <a id="lnk-panel" class="sub-btn" href="#">📁 File cPanel</a>
-      <a id="lnk-site1" class="sub-btn" href="#">🌐 Website 1</a>
-      <a id="lnk-site2" class="sub-btn" href="#">🌐 Website 2</a>
-      <a id="lnk-site3" class="sub-btn" href="#">🌐 Website 3</a>
-      <a id="lnk-site4" class="sub-btn" href="#">🌐 Website 4</a>
-      <a class="sub-btn" href="https://homeserver.local:9090" target="_blank">⚙️ Cockpit</a>
+    <div style="margin-top: 18px; font-size: 12px;">
+      <a href="cpanel.html" style="color: #60a5fa; text-decoration: none; margin-right: 14px;">Open WordPress cPanel &rarr;</a>
+      <a href="javascript:void(0)" onclick="initPortal()" style="color: var(--muted); text-decoration: none;">&larr; Back</a>
     </div>
   </div>
 
@@ -203,6 +325,10 @@
     const GIST_ID = "4e368fcb25106cbf65820b452e874419";
     const GIST_RAW_URL = "https://gist.githubusercontent.com/EXtrE0101/" + GIST_ID + "/raw/server.json";
 
+    let retryInterval = null;
+    let countdown = 10;
+    let pendingAdminRoute = null;
+
     async function hashString(str) {
       const utf8 = new TextEncoder().encode(str);
       const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
@@ -210,11 +336,23 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    function checkAuth() {
-      const auth = localStorage.getItem("homeserver_auth") || sessionStorage.getItem("homeserver_auth");
-      if (auth === "true") {
-        proceedToRedirect();
-      }
+    function isAuthed() {
+      return localStorage.getItem("homeserver_auth") === "true" || sessionStorage.getItem("homeserver_auth") === "true";
+    }
+
+    function hideAllViews() {
+      document.getElementById("view-connecting").style.display = "none";
+      document.getElementById("view-maintenance").style.display = "none";
+      document.getElementById("view-directory").style.display = "none";
+      document.getElementById("view-auth").style.display = "none";
+      if (retryInterval) clearInterval(retryInterval);
+    }
+
+    function showAuthBox(targetRoute = null) {
+      pendingAdminRoute = targetRoute;
+      hideAllViews();
+      document.getElementById("view-auth").style.display = "block";
+      document.getElementById("auth-error").style.display = "none";
     }
 
     async function handlePortalAuth(e) {
@@ -229,58 +367,144 @@
           token: "auth_" + Date.now(),
           expires: Date.now() + 30 * 24 * 60 * 60 * 1000
         }));
-        proceedToRedirect();
+        
+        if (pendingAdminRoute) {
+          executeRedirect(pendingAdminRoute);
+        } else {
+          initPortal();
+        }
       } else {
         document.getElementById("auth-error").style.display = "block";
       }
     }
 
-    async function proceedToRedirect() {
-      document.getElementById("auth-box").style.display = "none";
-      document.getElementById("redirect-box").style.display = "block";
+    function routeToAdmin(e, route) {
+      e.preventDefault();
+      if (isAuthed()) {
+        executeRedirect(route);
+      } else {
+        showAuthBox(route);
+      }
+    }
+
+    async function fetchServerData() {
+      try {
+        const res = await fetch(GIST_RAW_URL + "?_t=" + Date.now());
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data || !data.url || !data.url.startsWith("https://")) return null;
+        return data;
+      } catch(e) {
+        return null;
+      }
+    }
+
+    async function initPortal() {
+      hideAllViews();
+      document.getElementById("view-connecting").style.display = "block";
 
       const urlParams = new URLSearchParams(window.location.search);
       const goParam = urlParams.get("go") || urlParams.get("to");
       const isPause = urlParams.has("pause") || urlParams.has("manual");
 
-      let data = null;
-      try {
-        const res = await fetch(GIST_RAW_URL + "?_t=" + Date.now());
-        if (res.ok) data = await res.json();
-      } catch(e) {}
-
-      if (!data || !data.url) {
-        document.getElementById("red-title").innerText = "Server Offline";
-        document.getElementById("red-sub").innerText = "Unable to fetch live Cloudflare tunnel.";
+      // Admin routes require auth
+      if ((goParam === "terminal" || goParam === "panel" || goParam === "cpanel") && !isAuthed()) {
+        showAuthBox(goParam);
         return;
       }
 
-      document.getElementById("lnk-terminal").href = data.terminal || data.url + "/terminal/";
-      document.getElementById("lnk-panel").href = data.panel || data.url + "/panel/";
+      const data = await fetchServerData();
+
+      if (!data) {
+        showMaintenanceMode();
+        return;
+      }
+
+      // Populate Hub links
       document.getElementById("lnk-site1").href = data.site1 || data.url + "/site1/";
       document.getElementById("lnk-site2").href = data.site2 || data.url + "/site2/";
       document.getElementById("lnk-site3").href = data.site3 || data.url + "/site3/";
       document.getElementById("lnk-site4").href = data.site4 || data.url + "/site4/";
+      document.getElementById("lnk-terminal").href = data.terminal || data.url + "/terminal/";
 
       if (isPause) {
-        document.getElementById("red-title").innerText = "Home Server Portal";
-        document.getElementById("red-sub").innerText = "Choose an endpoint to launch:";
-        document.getElementById("quick-links-grid").style.display = "grid";
+        hideAllViews();
+        document.getElementById("view-directory").style.display = "block";
         return;
       }
 
+      executeRedirectWithData(goParam, data);
+    }
+
+    function executeRedirectWithData(goParam, data) {
       let targetUrl = data.url;
-      if (goParam === "terminal") targetUrl = data.terminal;
-      else if (goParam === "panel" || goParam === "cpanel") targetUrl = data.panel;
-      else if (goParam === "site1") targetUrl = data.site1;
-      else if (goParam === "site2") targetUrl = data.site2;
-      else if (goParam === "site3") targetUrl = data.site3;
-      else if (goParam === "site4") targetUrl = data.site4;
+      if (goParam === "site1") targetUrl = data.site1 || data.url + "/site1/";
+      else if (goParam === "site2") targetUrl = data.site2 || data.url + "/site2/";
+      else if (goParam === "site3") targetUrl = data.site3 || data.url + "/site3/";
+      else if (goParam === "site4") targetUrl = data.site4 || data.url + "/site4/";
+      else if (goParam === "terminal") targetUrl = data.terminal || data.url + "/terminal/";
+      else if (goParam === "panel") targetUrl = data.panel || data.url + "/panel/";
 
       window.location.replace(targetUrl);
     }
 
-    checkAuth();
+    async function executeRedirect(goParam) {
+      const data = await fetchServerData();
+      if (!data) {
+        showMaintenanceMode();
+        return;
+      }
+      executeRedirectWithData(goParam, data);
+    }
+
+    function showMaintenanceMode() {
+      hideAllViews();
+      document.getElementById("view-maintenance").style.display = "block";
+      startAutoRetryCountdown();
+    }
+
+    function startAutoRetryCountdown() {
+      countdown = 10;
+      updateRetryDisplay();
+      if (retryInterval) clearInterval(retryInterval);
+
+      retryInterval = setInterval(async () => {
+        countdown--;
+        updateRetryDisplay();
+        if (countdown <= 0) {
+          clearInterval(retryInterval);
+          const data = await fetchServerData();
+          if (data) {
+            initPortal();
+          } else {
+            startAutoRetryCountdown();
+          }
+        }
+      }, 1000);
+    }
+
+    function updateRetryDisplay() {
+      const timerText = document.getElementById("retry-timer-text");
+      const progressBar = document.getElementById("retry-progress");
+      if (timerText) timerText.innerHTML = `Rechecking server connection in <strong>${countdown}</strong> seconds...`;
+      if (progressBar) progressBar.style.width = `${(countdown / 10) * 100}%`;
+    }
+
+    async function retryConnectionNow() {
+      hideAllViews();
+      document.getElementById("view-connecting").style.display = "block";
+      document.getElementById("conn-title").innerText = "Retrying Connection...";
+      document.getElementById("conn-sub").innerText = "Checking if server has reconnected to cloud gateway...";
+      const data = await fetchServerData();
+      if (data) {
+        initPortal();
+      } else {
+        setTimeout(showMaintenanceMode, 1200);
+      }
+    }
+
+    // Auto-launch on page load
+    initPortal();
   </script>
 </body>
 </html>

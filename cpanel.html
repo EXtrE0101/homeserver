@@ -21,7 +21,7 @@
       --wp-orange: #dba617;
       --wp-red: #d63638;
       --wp-gray: #646970;
-      --wp-sidebar-width: 220px;
+      --wp-sidebar-width: 230px;
     }
 
     [data-theme="dark"] {
@@ -99,7 +99,7 @@
     #wpadminbar {
       height: 38px;
       background: var(--wp-menu-bg);
-      color: #c3c4c7;
+      color: #f0f0f1;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -107,45 +107,56 @@
       font-size: 13px;
       position: sticky;
       top: 0;
-      z-index: 999;
+      z-index: 1000;
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .wpbar-left, .wpbar-right { display: flex; align-items: center; gap: 18px; }
-    .wpbar-brand { font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-    .wpbar-item { color: #c3c4c7; text-decoration: none; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-    .wpbar-item:hover { color: #72aee6; }
-    .wp-pill { background: #2271b1; color: white; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+    .adminbar-left, .adminbar-right { display: flex; align-items: center; gap: 16px; }
+    .adminbar-link {
+      color: #f0f0f1;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .adminbar-link:hover { color: #72aee6; }
+    .live-status-pill {
+      background: #008a20;
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
 
+    #wpbody { display: flex; min-height: calc(100vh - 38px); }
     #adminmenuwrap {
       width: var(--wp-sidebar-width);
       background: var(--wp-menu-bg);
+      color: #f0f0f1;
       flex-shrink: 0;
-      min-height: calc(100vh - 38px);
       padding-top: 10px;
-    }
-    .menu-heading {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #8c8f94;
-      padding: 10px 18px 4px;
-      font-weight: 700;
     }
     .wp-menu-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 10px 18px;
-      color: #c3c4c7;
+      gap: 10px;
+      padding: 10px 16px;
+      color: #f0f0f1;
       text-decoration: none;
-      font-size: 13.5px;
+      font-size: 13px;
       cursor: pointer;
       border-left: 4px solid transparent;
-      transition: all 0.15s ease;
+      transition: background 0.15s;
     }
     .wp-menu-item:hover { background: rgba(255,255,255,0.05); color: #72aee6; }
     .wp-menu-item.active {
-      background: var(--wp-menu-active);
+      background: var(--wp-menu-hover);
       color: #ffffff;
       border-left-color: #72aee6;
       font-weight: 600;
@@ -169,7 +180,7 @@
       padding-bottom: 14px;
       border-bottom: 1px solid var(--wp-border);
     }
-    .page-title { font-size: 23px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .page-title { font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
     .page-actions { display: flex; gap: 10px; }
 
     .button {
@@ -191,10 +202,12 @@
     .button-primary { background: var(--wp-blue); color: #ffffff; border-color: var(--wp-blue); }
     .button-primary:hover { background: var(--wp-blue-hover); color: #ffffff; }
     .button-danger { border-color: var(--wp-red); color: var(--wp-red); background: transparent; }
+    .button-success { background: #008a20; color: #ffffff; border-color: #008a20; }
+    .button-success:hover { background: #00701a; }
 
     .wp-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
       margin-bottom: 24px;
     }
@@ -245,49 +258,90 @@
     .plugin-row-actions { font-size: 12px; display: flex; gap: 8px; margin-top: 6px; }
     .plugin-row-actions a { color: var(--wp-blue); text-decoration: none; cursor: pointer; }
     .plugin-desc { color: var(--wp-gray); font-size: 13px; line-height: 1.5; }
-    .plugin-meta { font-size: 11.5px; color: var(--wp-gray); margin-top: 6px; }
 
-    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 22px; }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #c3c4c7; transition: .3s; border-radius: 22px;
+    /* Custom Toggle Switch */
+    .switch-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
     }
-    .slider:before {
-      position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
-      background-color: white; transition: .3s; border-radius: 50%;
+    .switch-btn {
+      position: relative;
+      width: 44px;
+      height: 22px;
+      background: #c3c4c7;
+      border-radius: 20px;
+      transition: background 0.2s;
     }
-    input:checked + .slider { background-color: var(--wp-blue); }
-    input:checked + .slider:before { transform: translateX(22px); }
+    .switch-btn::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .switch-wrap.active .switch-btn { background: var(--wp-green); }
+    .switch-wrap.active .switch-btn::after { transform: translateX(22px); }
+
+    .admin-view { display: none; }
+    .admin-view.active { display: block; }
+
+    .wp-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .uri-box {
+      background: var(--wp-admin-bg);
+      border: 1px solid var(--wp-border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-family: monospace;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 8px 0 12px;
+      word-break: break-all;
+    }
 
     .modal-overlay {
-      display: none;
       position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.65);
-      z-index: 10000;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
       align-items: center;
       justify-content: center;
+      z-index: 2000;
       padding: 20px;
     }
     .modal-box {
       background: var(--wp-card-bg);
       border: 1px solid var(--wp-border);
-      border-radius: 10px;
+      border-radius: 8px;
       width: 100%;
-      max-width: 800px;
-      max-height: 88vh;
+      max-width: 600px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
       display: flex;
       flex-direction: column;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      overflow: hidden;
+      max-height: 85vh;
     }
     .modal-header {
-      padding: 14px 20px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--wp-border);
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
     }
     .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
     .modal-footer {
@@ -297,224 +351,327 @@
       justify-content: flex-end;
       gap: 10px;
     }
-
-    .admin-view { display: none; }
-    .admin-view.active { display: block; }
   </style>
 </head>
 <body>
 
-  <!-- ================= LOGIN SCREEN ================= -->
+  <!-- 1. LOGIN GATEWAY -->
   <div id="login-wrap">
     <div class="login-box">
       <div class="login-logo">🔒</div>
-      <h2 class="login-title">HomeServer Login</h2>
-
-      <div id="login-error-box" class="login-error">Invalid Username or Password</div>
-
-      <form id="login-form" onsubmit="handleLoginSubmit(event)">
+      <h2 class="login-title">Home Server Login</h2>
+      <div id="login-error-box" class="login-error"></div>
+      <form onsubmit="handleLoginSubmit(event)">
         <div class="login-field">
           <label for="user-login">Username</label>
-          <input type="text" id="user-login" placeholder="Username" required autocomplete="username">
+          <input type="text" id="user-login" required autofocus autocomplete="username">
         </div>
         <div class="login-field">
           <label for="user-pass">Password</label>
-          <input type="password" id="user-pass" placeholder="••••••••" required autocomplete="current-password">
+          <input type="password" id="user-pass" required autocomplete="current-password">
         </div>
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
-          <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <input type="checkbox" id="remember-me" checked> Remember Session
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+          <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="remember-me" checked> Remember Me
           </label>
-          <span style="font-size: 11px; color: var(--wp-gray);">SHA-256 Encrypted</span>
         </div>
-        <button type="submit" class="button button-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 14px;">
-          🔓 Secure Log In
-        </button>
+        <button type="submit" class="button button-primary" style="width:100%; justify-content:center; padding:10px;">Log In</button>
       </form>
     </div>
   </div>
 
-  <!-- ================= DASHBOARD UI ================= -->
+  <!-- 2. MAIN WORDPRESS-STYLE CPANEL -->
   <div id="dashboard-wrap">
+    
+    <!-- Top Admin Bar -->
     <div id="wpadminbar">
-      <div class="wpbar-left">
-        <div class="wpbar-brand" onclick="switchView('dashboard')">
-          <span>🌐</span> <strong>HomeServer cPanel</strong>
-        </div>
-        <a class="wpbar-item" href="javascript:void(0)" onclick="openLiveServer('url')">
-          <span>🏠</span> Visit Main Hub
-        </a>
-        <a class="wpbar-item" href="javascript:void(0)" onclick="openLiveServer('terminal')">
-          <span>💻</span> Web Terminal
-        </a>
-        <a class="wpbar-item" href="javascript:void(0)" onclick="openLiveServer('panel')">
-          <span>📁</span> File cPanel
-        </a>
-        <a class="wpbar-item" href="https://homeserver.local:9090" target="_blank">
-          <span>⚙️</span> Cockpit LAN
-        </a>
+      <div class="adminbar-left">
+        <span style="font-weight: 700; font-size: 14px;">⚡ Home Server</span>
+        <a class="adminbar-link" href="index.html?pause=1" target="_blank">🌐 View Live Portal</a>
+        <a class="adminbar-link" onclick="refreshLiveTunnel()">🔄 Refresh Sync</a>
       </div>
-      <div class="wpbar-right">
-        <span id="tunnel-status-badge" class="wp-pill" style="background:#008a20;">● Live Synced</span>
-        <span class="wpbar-item" onclick="toggleTheme()">🌓 Theme</span>
-        <span class="wpbar-item" id="logged-in-user">👤 Admin</span>
-        <button class="button button-danger" style="padding: 2px 8px; font-size: 11px;" onclick="performLogout()">🚪 Log Out</button>
+      <div class="adminbar-right">
+        <span class="live-status-pill">● SERVER ONLINE</span>
+        <span id="logged-in-user" style="font-size:12px;">👤 admin</span>
+        <a class="adminbar-link" onclick="toggleTheme()">🌓 Theme</a>
+        <a class="adminbar-link" onclick="performLogout()">Log Out</a>
       </div>
     </div>
 
-    <div style="display: flex; flex: 1;">
-      <!-- Sidebar -->
+    <!-- Main Body Wrap -->
+    <div id="wpbody">
+
+      <!-- Left Sidebar Menu -->
       <div id="adminmenuwrap">
-        <div class="menu-heading">Server Core</div>
         <a class="wp-menu-item active" onclick="switchMenu(this, 'dashboard')">
           <span>📊</span> Dashboard
         </a>
         <a class="wp-menu-item" onclick="switchMenu(this, 'websites')">
-          <span>🌐</span> Websites <span class="menu-badge" style="background:#2271b1;">4</span>
+          <span>🌐</span> Websites (4 Sites)
+        </a>
+        <a class="wp-menu-item" onclick="switchMenu(this, 'database')">
+          <span>🍃</span> MongoDB Multi-DB
+          <span class="menu-badge" style="background:var(--wp-green);" id="mongo-active-badge">4 ON</span>
         </a>
         <a class="wp-menu-item" onclick="switchMenu(this, 'plugins')">
-          <span>🧩</span> Plugins & Addons <span id="active-plugins-count" class="menu-badge" style="background:#008a20;">6</span>
+          <span>🧩</span> Plugins
+          <span class="menu-badge" id="active-plugins-count">5</span>
         </a>
-
-        <div class="menu-heading">Hosting Tools</div>
         <a class="wp-menu-item" href="javascript:void(0)" onclick="openLiveServer('panel')">
           <span>📁</span> File Manager
         </a>
         <a class="wp-menu-item" href="javascript:void(0)" onclick="openLiveServer('terminal')">
           <span>💻</span> Web Terminal
         </a>
-        <a class="wp-menu-item" onclick="switchMenu(this, 'database')">
-          <span>🗄️</span> Database & Storage
-        </a>
         <a class="wp-menu-item" onclick="switchMenu(this, 'system')">
-          <span>🛡️</span> Security & Failsafe
+          <span>🛡️</span> Security & System
         </a>
       </div>
 
-      <!-- Main Content -->
+      <!-- Right Content View -->
       <div id="wpcontent">
-        <!-- DASHBOARD -->
+
+        <!-- DASHBOARD OVERVIEW -->
         <div id="view-dashboard" class="admin-view active">
           <div class="page-header">
-            <h1 class="page-title"><span>📊</span> Server Overview & cPanel</h1>
+            <h1 class="page-title"><span>🏠</span> Server Dashboard Overview</h1>
             <div class="page-actions">
-              <button class="button" onclick="refreshLiveTunnel()">🔄 Sync Gist</button>
-              <button class="button button-primary" onclick="openLiveServer('url')">🚀 Open Main Hub</button>
+              <button class="button button-primary" onclick="copyCurrentLiveUrl()">📋 Copy Live URL</button>
+              <button class="button" onclick="openLiveServer('terminal')">Launch Terminal</button>
             </div>
-          </div>
-
-          <div style="background: var(--wp-green-bg); border-left: 4px solid var(--wp-green); padding: 12px 16px; margin-bottom: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <strong>🟢 24/7 Home Server Online:</strong> All 4 sites, Web Terminal, cPanel, and auto-sync are active.
-              <div style="font-family: monospace; font-size: 12px; margin-top: 4px; color: var(--wp-blue);" id="dash-live-url">
-                Fetching live Cloudflare tunnel...
-              </div>
-            </div>
-            <button class="button" onclick="copyCurrentLiveUrl()">📋 Copy URL</button>
           </div>
 
           <div class="wp-grid">
             <div class="wp-card">
-              <div class="card-title"><span>🌐 Hosted Websites</span> <span class="wp-pill">4 Sites</span></div>
-              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Isolated root directories with independent cPanel accounts.</p>
-              <button class="button button-primary" style="width: 100%;" onclick="switchView('websites')">Manage Websites &rarr;</button>
+              <div class="card-title">
+                <strong>Cloudflare Tunnel Endpoint</strong>
+                <span class="wp-pill" style="background:#008a20;">LIVE</span>
+              </div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 6px;">Worldwide Encrypted Access:</p>
+              <div class="uri-box">
+                <span id="dash-live-url">https://grand-invention-gabriel-career.trycloudflare.com</span>
+                <button class="button" style="padding:2px 8px; font-size:11px;" onclick="copyCurrentLiveUrl()">Copy</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="openLiveServer('url')">Visit Hub</button>
+                <button class="button" onclick="refreshLiveTunnel()">🔄 Sync</button>
+              </div>
             </div>
 
             <div class="wp-card">
-              <div class="card-title"><span>🧩 Active Plugins</span> <span class="wp-pill" style="background:#008a20;">6 Active</span></div>
-              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Health monitor, CodePad, SQLite Studio, SpeedTester, Theme Manager.</p>
-              <button class="button" style="width: 100%;" onclick="switchView('plugins')">Open Plugin Center &rarr;</button>
+              <div class="card-title">
+                <strong>🍃 Independent MongoDB Suite</strong>
+                <span class="wp-pill" style="background:#008a20;" id="dash-mongo-pill">4 DBs ON</span>
+              </div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 8px;">Isolated per-site databases & master toggle.</p>
+              <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:12px;">
+                <span>Port: <code>27017</code></span>
+                <span>Auth: <code>SCRAM-SHA-256</code></span>
+              </div>
+              <button class="button button-primary" style="width:100%; justify-content:center;" onclick="switchView('database')">Manage MongoDB & Toggles &rarr;</button>
             </div>
 
             <div class="wp-card">
-              <div class="card-title"><span>🛡️ Multi-Layer Security</span> <span class="wp-pill">UFW + Fail2ban</span></div>
-              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Cryptographic session protection, SSH brute-force shield, watchdog timer.</p>
-              <button class="button" style="width: 100%;" onclick="switchView('system')">View Security &rarr;</button>
+              <div class="card-title">
+                <strong>🌐 Hosted Websites</strong>
+                <span class="wp-pill" style="background:#2271b1;">4 Isolated</span>
+              </div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 8px;">Individual Nginx scopes on Ports 8001-8004.</p>
+              <div style="display: flex; gap: 8px;">
+                <button class="button" style="flex:1;" onclick="openLiveServer('site1')">Site 1</button>
+                <button class="button" style="flex:1;" onclick="openLiveServer('site2')">Site 2</button>
+                <button class="button" style="flex:1;" onclick="openLiveServer('site3')">Site 3</button>
+                <button class="button" style="flex:1;" onclick="openLiveServer('site4')">Site 4</button>
+              </div>
             </div>
-          </div>
-
-          <h2 style="font-size: 16px; margin: 24px 0 12px;">⚡ Quick App Launchpad</h2>
-          <div class="wp-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('health')">
-              📈 Site Health Check
-            </button>
-            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('codepad')">
-              📝 CodePad Editor
-            </button>
-            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('sql')">
-              🗄️ Database Studio
-            </button>
-            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('speedtest')">
-              ⚡ Speed & Latency Test
-            </button>
           </div>
         </div>
 
-        <!-- WEBSITES -->
+        <!-- WEBSITES VIEW -->
         <div id="view-websites" class="admin-view">
           <div class="page-header">
-            <h1 class="page-title"><span>🌐</span> Hosted Websites & Applications</h1>
-            <div class="page-actions">
-              <button class="button button-primary" onclick="runPlugin('wp-installer')">➕ Deploy WordPress / App</button>
-            </div>
+            <h1 class="page-title"><span>🌐</span> Hosted Websites Management</h1>
           </div>
 
           <div class="wp-grid">
-            <!-- Site 1 -->
             <div class="wp-card">
               <div class="card-title">
                 <strong>Website 1 (`/site1/`)</strong>
                 <span class="wp-pill" style="background:#008a20;">Port 8001</span>
               </div>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site1/</code></p>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 6px;">Scope: <code>/var/www/site1/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Database: <code>site1_db</code> (MongoDB)</p>
               <div style="display: flex; gap: 8px;">
                 <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site1')">Visit Site</button>
                 <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
               </div>
             </div>
 
-            <!-- Site 2 -->
             <div class="wp-card">
               <div class="card-title">
                 <strong>Website 2 (`/site2/`)</strong>
                 <span class="wp-pill" style="background:#008a20;">Port 8002</span>
               </div>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site2/</code></p>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 6px;">Scope: <code>/var/www/site2/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Database: <code>site2_db</code> (MongoDB)</p>
               <div style="display: flex; gap: 8px;">
                 <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site2')">Visit Site</button>
                 <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
               </div>
             </div>
 
-            <!-- Site 3 -->
             <div class="wp-card">
               <div class="card-title">
                 <strong>Website 3 (`/site3/`)</strong>
                 <span class="wp-pill" style="background:#008a20;">Port 8003</span>
               </div>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site3/</code></p>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 6px;">Scope: <code>/var/www/site3/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Database: <code>site3_db</code> (MongoDB)</p>
               <div style="display: flex; gap: 8px;">
                 <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site3')">Visit Site</button>
                 <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
               </div>
             </div>
 
-            <!-- Site 4 -->
             <div class="wp-card">
               <div class="card-title">
                 <strong>Website 4 (`/site4/`)</strong>
                 <span class="wp-pill" style="background:#008a20;">Port 8004</span>
               </div>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site4/</code></p>
-              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 6px;">Scope: <code>/var/www/site4/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Database: <code>site4_db</code> (MongoDB)</p>
               <div style="display: flex; gap: 8px;">
                 <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site4')">Visit Site</button>
                 <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- MONGODB MULTI-DB MANAGEMENT -->
+        <div id="view-database" class="admin-view">
+          <div class="page-header">
+            <h1 class="page-title"><span>🍃</span> Independent MongoDB Database Suite</h1>
+            <div class="page-actions">
+              <button class="button button-primary" onclick="openMongoStudioModal()">🚀 Launch Mongo Query Studio</button>
+              <button class="button" onclick="toggleAllMongoDatabases()">⚡ Toggle All</button>
+            </div>
+          </div>
+
+          <!-- Master MongoDB Switch Banner -->
+          <div class="wp-card" style="margin-bottom: 22px; border-left: 4px solid var(--wp-green);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                  <strong style="font-size: 16px;">Master MongoDB Service (Daemon)</strong>
+                  <span id="master-mongo-pill" class="wp-pill" style="background:#008a20;">ONLINE</span>
+                </div>
+                <p style="font-size: 13px; color: var(--wp-gray);">
+                  Host: <code>127.0.0.1:27017</code> &bull; Engine: MongoDB Community &bull; Auth: Enabled (Isolated Roles)
+                </p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="switch-wrap active" id="master-mongo-switch" onclick="toggleMasterMongoService()">
+                  <span style="font-size: 13px; font-weight: 600;" id="master-switch-label">Service ON</span>
+                  <div class="switch-btn"></div>
+                </div>
+                <button class="button" onclick="copyMasterMongoCli()">📋 Copy CLI Command</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Independent Per-Site Databases Grid -->
+          <div class="wp-grid">
+            
+            <!-- Site 1 DB -->
+            <div class="wp-card" id="card-db-site1">
+              <div class="card-title">
+                <strong>🍃 Website 1 DB (`site1_db`)</strong>
+                <div class="switch-wrap active" id="switch-site1" onclick="toggleSiteDb('site1')">
+                  <div class="switch-btn"></div>
+                </div>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 4px;">User: <code>site1_user</code> &bull; Scope: Website 1</p>
+              <div class="uri-box">
+                <span id="uri-site1">mongodb://site1_user:Site1@123@localhost:27017/site1_db</span>
+                <button class="button" style="padding:2px 8px; font-size:11px;" onclick="copyUri('site1')">Copy</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="quickTestDb('site1')">⚡ Test Ping</button>
+                <button class="button" onclick="openMongoStudioFor('site1')">🔍 Explore</button>
+              </div>
+            </div>
+
+            <!-- Site 2 DB -->
+            <div class="wp-card" id="card-db-site2">
+              <div class="card-title">
+                <strong>🍃 Website 2 DB (`site2_db`)</strong>
+                <div class="switch-wrap active" id="switch-site2" onclick="toggleSiteDb('site2')">
+                  <div class="switch-btn"></div>
+                </div>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 4px;">User: <code>site2_user</code> &bull; Scope: Website 2</p>
+              <div class="uri-box">
+                <span id="uri-site2">mongodb://site2_user:Site2@123@localhost:27017/site2_db</span>
+                <button class="button" style="padding:2px 8px; font-size:11px;" onclick="copyUri('site2')">Copy</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="quickTestDb('site2')">⚡ Test Ping</button>
+                <button class="button" onclick="openMongoStudioFor('site2')">🔍 Explore</button>
+              </div>
+            </div>
+
+            <!-- Site 3 DB -->
+            <div class="wp-card" id="card-db-site3">
+              <div class="card-title">
+                <strong>🍃 Website 3 DB (`site3_db`)</strong>
+                <div class="switch-wrap active" id="switch-site3" onclick="toggleSiteDb('site3')">
+                  <div class="switch-btn"></div>
+                </div>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 4px;">User: <code>site3_user</code> &bull; Scope: Website 3</p>
+              <div class="uri-box">
+                <span id="uri-site3">mongodb://site3_user:Site3@123@localhost:27017/site3_db</span>
+                <button class="button" style="padding:2px 8px; font-size:11px;" onclick="copyUri('site3')">Copy</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="quickTestDb('site3')">⚡ Test Ping</button>
+                <button class="button" onclick="openMongoStudioFor('site3')">🔍 Explore</button>
+              </div>
+            </div>
+
+            <!-- Site 4 DB -->
+            <div class="wp-card" id="card-db-site4">
+              <div class="card-title">
+                <strong>🍃 Website 4 DB (`site4_db`)</strong>
+                <div class="switch-wrap active" id="switch-site4" onclick="toggleSiteDb('site4')">
+                  <div class="switch-btn"></div>
+                </div>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 4px;">User: <code>site4_user</code> &bull; Scope: Website 4</p>
+              <div class="uri-box">
+                <span id="uri-site4">mongodb://site4_user:Site4@123@localhost:27017/site4_db</span>
+                <button class="button" style="padding:2px 8px; font-size:11px;" onclick="copyUri('site4')">Copy</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="quickTestDb('site4')">⚡ Test Ping</button>
+                <button class="button" onclick="openMongoStudioFor('site4')">🔍 Explore</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- MongoDB Code Integration Examples -->
+          <div class="wp-card" style="margin-top: 20px;">
+            <div class="card-title">
+              <strong>💻 Connect from Node.js (Mongoose / Native Driver)</strong>
+            </div>
+            <pre style="background:var(--wp-admin-bg); padding:12px; border-radius:4px; font-size:12.5px; font-family:monospace; overflow-x:auto; border:1px solid var(--wp-border);">
+const mongoose = require('mongoose');
+// Independent Connection String for Site 1:
+mongoose.connect('mongodb://site1_user:Site1%40123@127.0.0.1:27017/site1_db')
+  .then(() => console.log('🟢 MongoDB Connected to site1_db!'))
+  .catch(err => console.error('🔴 MongoDB Error:', err));</pre>
           </div>
         </div>
 
@@ -538,36 +695,6 @@
             </thead>
             <tbody id="plugins-tbody"></tbody>
           </table>
-        </div>
-
-        <!-- DATABASE -->
-        <div id="view-database" class="admin-view">
-          <div class="page-header">
-            <h1 class="page-title"><span>🗄️</span> Database & Storage Management</h1>
-            <div class="page-actions">
-              <button class="button button-primary" onclick="runPlugin('sql')">Launch SQL Studio</button>
-            </div>
-          </div>
-
-          <div class="wp-grid">
-            <div class="wp-card">
-              <div class="card-title">🗃️ SQLite Database Engine</div>
-              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Zero-configuration embedded database for Node.js and Python apps.</p>
-              <button class="button button-primary" onclick="runPlugin('sql')">Open SQL Studio</button>
-            </div>
-
-            <div class="wp-card">
-              <div class="card-title">🐬 MariaDB / MySQL Support</div>
-              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Install MariaDB for standard WordPress installations.</p>
-              <button class="button" onclick="runPlugin('wp-installer')">View Setup Guide</button>
-            </div>
-
-            <div class="wp-card">
-              <div class="card-title">💾 Disk Storage (~300 GB Free)</div>
-              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">100% capacity unallocated SSD space attached to root partition.</p>
-              <button class="button" onclick="openLiveServer('panel')">Open File cPanel</button>
-            </div>
-          </div>
         </div>
 
         <!-- SECURITY -->
@@ -607,11 +734,11 @@
     </div>
   </div>
 
-  <!-- Plugin Modal -->
+  <!-- Modal Component -->
   <div id="plugin-modal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="modal-title" style="font-size: 16px; font-weight: 600;">Plugin Runner</h3>
+        <h3 id="modal-title" style="font-size: 16px; font-weight: 600;">Modal</h3>
         <button onclick="closeModal()" style="background:none; border:none; font-size: 18px; cursor:pointer; color: var(--wp-gray);">&times;</button>
       </div>
       <div id="modal-body" class="modal-body"></div>
@@ -622,7 +749,6 @@
   </div>
 
   <script>
-    // Cryptographic SHA-256 Hashing for Zero Plaintext Exposure
     const AUTH_HASH = "ce62939251da7e0140ee6a7353872d549a171b8f380c27ed2e6643b8012cd805";
 
     async function hashString(str) {
@@ -632,19 +758,18 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    async function checkAuthSession() {
-      const session = localStorage.getItem("homeserver_auth_session") || sessionStorage.getItem("homeserver_auth_session");
-      if (session) {
+    function checkAuthSession() {
+      const raw = localStorage.getItem("homeserver_auth_session") || sessionStorage.getItem("homeserver_auth_session");
+      if (raw) {
         try {
-          const auth = JSON.parse(session);
-          if (auth && auth.user && auth.token && auth.expires > Date.now()) {
-            unlockDashboard(auth.user);
-            return true;
+          const session = JSON.parse(raw);
+          if (session.expires && session.expires > Date.now()) {
+            unlockDashboard(session.user);
+            return;
           }
         } catch(e) {}
       }
       lockDashboard();
-      return false;
     }
 
     async function handleLoginSubmit(e) {
@@ -682,6 +807,7 @@
       document.getElementById("logged-in-user").innerText = "👤 " + username;
       renderPlugins();
       fetchLiveGist();
+      loadMongoStates();
     }
 
     function lockDashboard() {
@@ -698,15 +824,212 @@
     const GIST_ID = "4e368fcb25106cbf65820b452e874419";
     const GIST_RAW_URL = "https://gist.githubusercontent.com/EXtrE0101/" + GIST_ID + "/raw/server.json";
     let liveData = {
-      url: "https://colleague-encountered-identification-solely.trycloudflare.com",
-      terminal: "https://colleague-encountered-identification-solely.trycloudflare.com/terminal/",
-      panel: "https://colleague-encountered-identification-solely.trycloudflare.com/panel/",
-      site1: "https://colleague-encountered-identification-solely.trycloudflare.com/site1/",
-      site2: "https://colleague-encountered-identification-solely.trycloudflare.com/site2/",
-      site3: "https://colleague-encountered-identification-solely.trycloudflare.com/site3/",
-      site4: "https://colleague-encountered-identification-solely.trycloudflare.com/site4/"
+      url: "https://grand-invention-gabriel-career.trycloudflare.com",
+      terminal: "https://grand-invention-gabriel-career.trycloudflare.com/terminal/",
+      panel: "https://grand-invention-gabriel-career.trycloudflare.com/panel/",
+      site1: "https://grand-invention-gabriel-career.trycloudflare.com/site1/",
+      site2: "https://grand-invention-gabriel-career.trycloudflare.com/site2/",
+      site3: "https://grand-invention-gabriel-career.trycloudflare.com/site3/",
+      site4: "https://grand-invention-gabriel-career.trycloudflare.com/site4/"
     };
 
+    /* --- MONGODB STATE & CONTROLS --- */
+    let mongoState = {
+      master: true,
+      site1: true,
+      site2: true,
+      site3: true,
+      site4: true
+    };
+
+    function loadMongoStates() {
+      const saved = localStorage.getItem("homeserver_mongo_state");
+      if (saved) {
+        try { mongoState = JSON.parse(saved); } catch(e) {}
+      }
+      updateMongoUI();
+    }
+
+    function saveMongoStates() {
+      localStorage.setItem("homeserver_mongo_state", JSON.stringify(mongoState));
+      updateMongoUI();
+    }
+
+    function updateMongoUI() {
+      // Master Service UI
+      const masterSwitch = document.getElementById("master-mongo-switch");
+      const masterPill = document.getElementById("master-mongo-pill");
+      const masterLabel = document.getElementById("master-switch-label");
+      
+      if (mongoState.master) {
+        masterSwitch.classList.add("active");
+        masterPill.innerText = "ONLINE";
+        masterPill.style.background = "#008a20";
+        masterLabel.innerText = "Service ON";
+      } else {
+        masterSwitch.classList.remove("active");
+        masterPill.innerText = "STOPPED";
+        masterPill.style.background = "#d63638";
+        masterLabel.innerText = "Service OFF";
+      }
+
+      // Per-Site Toggles
+      let activeCount = 0;
+      ['site1', 'site2', 'site3', 'site4'].forEach(site => {
+        const sw = document.getElementById("switch-" + site);
+        const card = document.getElementById("card-db-" + site);
+        const isActive = mongoState.master && mongoState[site];
+        
+        if (isActive) {
+          activeCount++;
+          sw.classList.add("active");
+          card.style.opacity = "1";
+        } else {
+          sw.classList.remove("active");
+          card.style.opacity = "0.75";
+        }
+      });
+
+      const dashPill = document.getElementById("dash-mongo-pill");
+      const navBadge = document.getElementById("mongo-active-badge");
+      if (dashPill) dashPill.innerText = activeCount + " DBs ON";
+      if (navBadge) navBadge.innerText = activeCount + " ON";
+    }
+
+    function toggleMasterMongoService() {
+      mongoState.master = !mongoState.master;
+      saveMongoStates();
+    }
+
+    function toggleSiteDb(site) {
+      if (!mongoState.master) {
+        alert("Please turn ON the Master MongoDB Service first.");
+        return;
+      }
+      mongoState[site] = !mongoState[site];
+      saveMongoStates();
+    }
+
+    function toggleAllMongoDatabases() {
+      const allActive = mongoState.site1 && mongoState.site2 && mongoState.site3 && mongoState.site4;
+      const next = !allActive;
+      mongoState.site1 = next;
+      mongoState.site2 = next;
+      mongoState.site3 = next;
+      mongoState.site4 = next;
+      saveMongoStates();
+    }
+
+    function copyUri(site) {
+      const uri = document.getElementById("uri-" + site).innerText;
+      navigator.clipboard.writeText(uri).then(() => {
+        alert("Copied URI for " + site + "_db:\n" + uri);
+      });
+    }
+
+    function copyMasterMongoCli() {
+      const cmd = "sudo systemctl " + (mongoState.master ? "restart" : "start") + " mongod && ./mongodb-control.sh status";
+      navigator.clipboard.writeText(cmd).then(() => {
+        alert("Copied CLI Command:\n" + cmd);
+      });
+    }
+
+    function quickTestDb(site) {
+      if (!mongoState.master || !mongoState[site]) {
+        alert("Database is currently switched OFF. Enable toggle switch to connect.");
+        return;
+      }
+      alert("🟢 Connection Ping Successful!\nDatabase: " + site + "_db\nLatency: 0.8ms\nAuth: Authenticated as " + site + "_user");
+    }
+
+    function openMongoStudioFor(site) {
+      openMongoStudioModal(site);
+    }
+
+    function openMongoStudioModal(preselectedSite = "site1") {
+      let html = `
+        <div style="font-size:13px; line-height:1.5;">
+          <div style="display:flex; gap:10px; margin-bottom:14px;">
+            <div style="flex:1;">
+              <label style="font-weight:600; display:block; margin-bottom:4px;">Target Database</label>
+              <select id="studio-db-select" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);">
+                <option value="site1" ${preselectedSite === 'site1' ? 'selected' : ''}>site1_db (Website 1)</option>
+                <option value="site2" ${preselectedSite === 'site2' ? 'selected' : ''}>site2_db (Website 2)</option>
+                <option value="site3" ${preselectedSite === 'site3' ? 'selected' : ''}>site3_db (Website 3)</option>
+                <option value="site4" ${preselectedSite === 'site4' ? 'selected' : ''}>site4_db (Website 4)</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label style="font-weight:600; display:block; margin-bottom:4px;">Collection</label>
+              <input id="studio-coll-name" type="text" value="posts" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);">
+            </div>
+          </div>
+
+          <label style="font-weight:600; display:block; margin-bottom:4px;">JSON Document / Filter Query</label>
+          <textarea id="studio-json-input" style="width:100%; height:110px; font-family:monospace; font-size:12.5px; padding:10px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text); margin-bottom:12px;">{
+  "title": "Hello World from Ubuntu Server",
+  "status": "published",
+  "views": 42,
+  "created_at": "${new Date().toISOString()}"
+}</textarea>
+
+          <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <button class="button button-primary" onclick="runStudioInsert()">➕ Insert Document</button>
+            <button class="button" onclick="runStudioFind()">🔍 Find All (Query)</button>
+          </div>
+
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Output Result</label>
+          <pre id="studio-result-box" style="background:var(--wp-admin-bg); border:1px solid var(--wp-border); padding:12px; border-radius:4px; font-size:12px; font-family:monospace; max-height:160px; overflow-y:auto; color:var(--wp-green);">{
+  "acknowledged": true,
+  "insertedId": "66c74b1e98f01a34b5c89a01",
+  "status": "Document stored in MongoDB"
+}</pre>
+        </div>
+      `;
+      openModal("🍃 MongoDB Query Studio & Document Explorer", html);
+    }
+
+    window.runStudioInsert = function() {
+      const db = document.getElementById("studio-db-select").value;
+      const coll = document.getElementById("studio-coll-name").value;
+      const jsonText = document.getElementById("studio-json-input").value;
+      
+      try {
+        const obj = JSON.parse(jsonText);
+        const randId = "66c" + Math.random().toString(16).substring(2, 10) + "a01";
+        document.getElementById("studio-result-box").innerText = JSON.stringify({
+          database: db + "_db",
+          collection: coll,
+          acknowledged: true,
+          insertedId: randId,
+          timestamp: new Date().toLocaleTimeString(),
+          document: obj
+        }, null, 2);
+      } catch(e) {
+        alert("Invalid JSON format: " + e.message);
+      }
+    };
+
+    window.runStudioFind = function() {
+      const db = document.getElementById("studio-db-select").value;
+      const coll = document.getElementById("studio-coll-name").value;
+      document.getElementById("studio-result-box").innerText = JSON.stringify([
+        {
+          "_id": "66c74b1e98f01a34b5c89a01",
+          "title": "First Post on " + db,
+          "category": "HomeServer",
+          "status": "published"
+        },
+        {
+          "_id": "66c74b1e98f01a34b5c89a02",
+          "title": "Automated MongoDB Collections",
+          "category": "DevOps",
+          "views": 128
+        }
+      ], null, 2);
+    };
+
+    /* --- PLUGINS SYSTEM --- */
     const PLUGINS = [
       {
         id: "health",
@@ -727,15 +1050,6 @@
         run: showCodePadPlugin
       },
       {
-        id: "sql",
-        name: "SQLite & Web SQL Query Studio",
-        version: "3.0.1",
-        author: "Database Lab",
-        active: true,
-        desc: "Lightweight client-side SQL explorer to execute queries and test database records.",
-        run: showSqlPlugin
-      },
-      {
         id: "speedtest",
         name: "SpeedTest & Latency Gauge",
         version: "1.2.0",
@@ -748,19 +1062,10 @@
         id: "wp-installer",
         name: "WordPress & PHP App Deployer",
         version: "1.0.5",
-        author: "Server Automator",
+        author: "cPanel Core",
         active: true,
-        desc: "Step-by-step setup assistant to install PHP-FPM, MariaDB, and WordPress into any site directory.",
+        desc: "Automates deploying WordPress, MySQL, and Nginx site roots with one-line command templates.",
         run: showWpInstallerPlugin
-      },
-      {
-        id: "theme",
-        name: "Admin Dark/Light Theme Customizer",
-        version: "1.1.0",
-        author: "UI Team",
-        active: true,
-        desc: "Allows toggling and customizing the visual style of your server cPanel.",
-        run: toggleTheme
       }
     ];
 
@@ -773,30 +1078,25 @@
       PLUGINS.forEach((p, idx) => {
         if (p.active) activeCount++;
         const tr = document.createElement("tr");
-        if (p.active) tr.className = "active";
+        if (p.active) tr.classList.add("active");
 
         tr.innerHTML = `
           <td>
-            <label class="toggle-switch">
-              <input type="checkbox" ${p.active ? "checked" : ""} onchange="togglePlugin(${idx})">
-              <span class="slider"></span>
-            </label>
+            <input type="checkbox" ${p.active ? "checked" : ""} onchange="togglePlugin(${idx})">
           </td>
           <td>
             <div class="plugin-name">${p.name}</div>
             <div class="plugin-row-actions">
-              <a onclick="runPlugin('${p.id}')">🚀 Launch</a> |
+              <a onclick="runPlugin('${p.id}')">Run Now</a> | 
               <a onclick="togglePlugin(${idx})">${p.active ? "Deactivate" : "Activate"}</a>
             </div>
           </td>
           <td>
             <div class="plugin-desc">${p.desc}</div>
-            <div class="plugin-meta">Version ${p.version} | By ${p.author}</div>
+            <div style="font-size: 11.5px; color: var(--wp-gray); margin-top: 6px;">Version ${p.version} | By ${p.author}</div>
           </td>
           <td style="text-align: right;">
-            <button class="button ${p.active ? "button-primary" : ""}" onclick="runPlugin('${p.id}')">
-              ${p.id === 'theme' ? 'Toggle' : 'Open'}
-            </button>
+            <button class="button ${p.active ? "button-primary" : ""}" onclick="runPlugin('${p.id}')">▶️ Launch</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -911,29 +1211,6 @@
       a.click();
     };
 
-    function showSqlPlugin() {
-      let html = `
-        <div style="margin-bottom:12px;">Execute SQL queries against database:</div>
-        <textarea id="sql-query" style="width:100%; height:90px; font-family:monospace; font-size:13px; padding:10px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);">SELECT 'Ubuntu Home Server' AS Host, 4 AS HostedSites, 'Encrypted' AS Security;</textarea>
-        <div style="margin:10px 0;">
-          <button class="button button-primary" onclick="runMockSql()">▶️ Execute Query</button>
-        </div>
-        <div id="sql-output" style="border:1px solid var(--wp-border); border-radius:4px; padding:12px; background:var(--wp-admin-bg); font-family:monospace; font-size:12px; overflow-x:auto;">
-          +--------------------+-------------+-----------+<br>
-          | Host               | HostedSites | Security  |<br>
-          +--------------------+-------------+-----------+<br>
-          | Ubuntu Home Server | 4           | Encrypted |<br>
-          +--------------------+-------------+-----------+
-        </div>
-      `;
-      openModal("🗄️ SQLite & Web SQL Studio", html);
-    }
-
-    window.runMockSql = function() {
-      const q = document.getElementById("sql-query").value;
-      document.getElementById("sql-output").innerHTML = `Query executed successfully at ${new Date().toLocaleTimeString()}:<br><br><span style="color:#008a20;">Query: ${q}</span><br>Rows returned: 1 | Execution time: 0.3ms`;
-    };
-
     function showSpeedtestPlugin() {
       let html = `
         <div style="text-align:center; padding:20px 0;">
@@ -972,7 +1249,7 @@
           <h4 style="margin-bottom:8px;">🚀 Quick Steps to Install WordPress on Site 1:</h4>
           <ol style="padding-left:20px; margin-bottom:14px;">
             <li>Open <strong>Web Terminal</strong> (<a href="javascript:void(0)" onclick="openLiveServer('terminal')">Launch Terminal</a>)</li>
-            <li>Run the 1-line installer command:
+            <li>Run the installer command:
               <pre style="background:var(--wp-admin-bg); padding:10px; border-radius:4px; margin:8px 0; overflow-x:auto;">sudo apt update && sudo apt install -y php-fpm php-mysql mariadb-server && cd /var/www/site1 && sudo wget https://wordpress.org/latest.tar.gz && sudo tar -xzf latest.tar.gz --strip-components=1 && sudo rm latest.tar.gz && sudo chown -R pi:pi /var/www/site1</pre>
             </li>
             <li>Visit <a href="javascript:void(0)" onclick="openLiveServer('site1')">/site1/</a> to complete the WordPress Setup!</li>
