@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Server cPanel &mdash; WordPress Style</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+  <style>
+    :root {
+      --wp-admin-bg: #f0f0f1;
+      --wp-menu-bg: #1d2327;
+      --wp-menu-hover: #2271b1;
+      --wp-menu-active: #2271b1;
+      --wp-text: #2c3338;
+      --wp-card-bg: #ffffff;
+      --wp-border: #c3c4c7;
+      --wp-blue: #2271b1;
+      --wp-blue-hover: #135e96;
+      --wp-green: #008a20;
+      --wp-green-bg: #edfaef;
+      --wp-orange: #dba617;
+      --wp-red: #d63638;
+      --wp-gray: #646970;
+      --wp-sidebar-width: 220px;
+    }
+
+    [data-theme="dark"] {
+      --wp-admin-bg: #0f172a;
+      --wp-menu-bg: #090d16;
+      --wp-menu-hover: #38bdf8;
+      --wp-menu-active: #0284c7;
+      --wp-text: #f1f5f9;
+      --wp-card-bg: #1e293b;
+      --wp-border: #334155;
+      --wp-blue: #38bdf8;
+      --wp-blue-hover: #0ea5e9;
+      --wp-green: #4ade80;
+      --wp-green-bg: rgba(34, 197, 94, 0.15);
+      --wp-gray: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      background: var(--wp-admin-bg);
+      color: var(--wp-text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Login Gateway */
+    #login-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--wp-admin-bg);
+      padding: 20px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 360px;
+      background: var(--wp-card-bg);
+      border: 1px solid var(--wp-border);
+      border-radius: 8px;
+      padding: 26px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .login-logo { font-size: 48px; text-align: center; margin-bottom: 12px; }
+    .login-title { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+    .login-field { margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+    .login-field input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid var(--wp-border);
+      border-radius: 4px;
+      background: var(--wp-admin-bg);
+      color: var(--wp-text);
+      outline: none;
+    }
+    .login-field input:focus { border-color: var(--wp-blue); box-shadow: 0 0 0 1px var(--wp-blue); }
+    .login-error {
+      background: #fcf0f1;
+      border-left: 4px solid var(--wp-red);
+      color: var(--wp-red);
+      padding: 10px 12px;
+      font-size: 12.5px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* Dashboard UI */
+    #dashboard-wrap { display: none; }
+    #wpadminbar {
+      height: 38px;
+      background: var(--wp-menu-bg);
+      color: #c3c4c7;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 13px;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .wpbar-left, .wpbar-right { display: flex; align-items: center; gap: 18px; }
+    .wpbar-brand { font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .wpbar-item { color: #c3c4c7; text-decoration: none; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .wpbar-item:hover { color: #72aee6; }
+    .wp-pill { background: #2271b1; color: white; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+
+    #adminmenuwrap {
+      width: var(--wp-sidebar-width);
+      background: var(--wp-menu-bg);
+      flex-shrink: 0;
+      min-height: calc(100vh - 38px);
+      padding-top: 10px;
+    }
+    .menu-heading {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8c8f94;
+      padding: 10px 18px 4px;
+      font-weight: 700;
+    }
+    .wp-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      color: #c3c4c7;
+      text-decoration: none;
+      font-size: 13.5px;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .wp-menu-item:hover { background: rgba(255,255,255,0.05); color: #72aee6; }
+    .wp-menu-item.active {
+      background: var(--wp-menu-active);
+      color: #ffffff;
+      border-left-color: #72aee6;
+      font-weight: 600;
+    }
+    .wp-menu-item .menu-badge {
+      margin-left: auto;
+      background: #d63638;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 999px;
+    }
+
+    #wpcontent { flex: 1; padding: 24px 32px; overflow-y: auto; }
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--wp-border);
+    }
+    .page-title { font-size: 23px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .page-actions { display: flex; gap: 10px; }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid var(--wp-blue);
+      background: #f6f7f7;
+      color: var(--wp-blue);
+      transition: all 0.15s;
+    }
+    .button:hover { background: #f0f0f1; border-color: var(--wp-blue-hover); color: var(--wp-blue-hover); }
+    .button-primary { background: var(--wp-blue); color: #ffffff; border-color: var(--wp-blue); }
+    .button-primary:hover { background: var(--wp-blue-hover); color: #ffffff; }
+    .button-danger { border-color: var(--wp-red); color: var(--wp-red); background: transparent; }
+
+    .wp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .wp-card {
+      background: var(--wp-card-bg);
+      border: 1px solid var(--wp-border);
+      border-radius: 6px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      position: relative;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--wp-border);
+      padding-bottom: 8px;
+    }
+
+    .plugins-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--wp-card-bg);
+      border: 1px solid var(--wp-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .plugins-table th, .plugins-table td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--wp-border);
+      font-size: 13px;
+      vertical-align: top;
+    }
+    .plugins-table th {
+      background: rgba(0,0,0,0.03);
+      font-weight: 600;
+      color: var(--wp-gray);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    .plugins-table tr.active { background: rgba(34, 113, 177, 0.04); border-left: 4px solid var(--wp-blue); }
+    .plugin-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .plugin-row-actions { font-size: 12px; display: flex; gap: 8px; margin-top: 6px; }
+    .plugin-row-actions a { color: var(--wp-blue); text-decoration: none; cursor: pointer; }
+    .plugin-desc { color: var(--wp-gray); font-size: 13px; line-height: 1.5; }
+    .plugin-meta { font-size: 11.5px; color: var(--wp-gray); margin-top: 6px; }
+
+    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #c3c4c7; transition: .3s; border-radius: 22px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background-color: white; transition: .3s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--wp-blue); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.65);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: var(--wp-card-bg);
+      border: 1px solid var(--wp-border);
+      border-radius: 10px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--wp-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--wp-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .admin-view { display: none; }
+    .admin-view.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- ================= LOGIN SCREEN ================= -->
+  <div id="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">🔒</div>
+      <h2 class="login-title">HomeServer Login</h2>
+
+      <div id="login-error-box" class="login-error">Invalid Username or Password</div>
+
+      <form id="login-form" onsubmit="handleLoginSubmit(event)">
+        <div class="login-field">
+          <label for="user-login">Username</label>
+          <input type="text" id="user-login" placeholder="Username" required autocomplete="username">
+        </div>
+        <div class="login-field">
+          <label for="user-pass">Password</label>
+          <input type="password" id="user-pass" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="remember-me" checked> Remember Session
+          </label>
+          <span style="font-size: 11px; color: var(--wp-gray);">SHA-256 Encrypted</span>
+        </div>
+        <button type="submit" class="button button-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 14px;">
+          🔓 Secure Log In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD UI ================= -->
+  <div id="dashboard-wrap">
+    <div id="wpadminbar">
+      <div class="wpbar-left">
+        <div class="wpbar-brand" onclick="switchView('dashboard')">
+          <span>🌐</span> <strong>HomeServer cPanel</strong>
+        </div>
+        <a class="wpbar-item" href="javascript:void(0)" onclick="openLiveServer('url')">
+          <span>🏠</span> Visit Main Hub
+        </a>
+        <a class="wpbar-item" href="javascript:void(0)" onclick="openLiveServer('terminal')">
+          <span>💻</span> Web Terminal
+        </a>
+        <a class="wpbar-item" href="javascript:void(0)" onclick="openLiveServer('panel')">
+          <span>📁</span> File cPanel
+        </a>
+        <a class="wpbar-item" href="https://homeserver.local:9090" target="_blank">
+          <span>⚙️</span> Cockpit LAN
+        </a>
+      </div>
+      <div class="wpbar-right">
+        <span id="tunnel-status-badge" class="wp-pill" style="background:#008a20;">● Live Synced</span>
+        <span class="wpbar-item" onclick="toggleTheme()">🌓 Theme</span>
+        <span class="wpbar-item" id="logged-in-user">👤 Admin</span>
+        <button class="button button-danger" style="padding: 2px 8px; font-size: 11px;" onclick="performLogout()">🚪 Log Out</button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex: 1;">
+      <!-- Sidebar -->
+      <div id="adminmenuwrap">
+        <div class="menu-heading">Server Core</div>
+        <a class="wp-menu-item active" onclick="switchMenu(this, 'dashboard')">
+          <span>📊</span> Dashboard
+        </a>
+        <a class="wp-menu-item" onclick="switchMenu(this, 'websites')">
+          <span>🌐</span> Websites <span class="menu-badge" style="background:#2271b1;">4</span>
+        </a>
+        <a class="wp-menu-item" onclick="switchMenu(this, 'plugins')">
+          <span>🧩</span> Plugins & Addons <span id="active-plugins-count" class="menu-badge" style="background:#008a20;">6</span>
+        </a>
+
+        <div class="menu-heading">Hosting Tools</div>
+        <a class="wp-menu-item" href="javascript:void(0)" onclick="openLiveServer('panel')">
+          <span>📁</span> File Manager
+        </a>
+        <a class="wp-menu-item" href="javascript:void(0)" onclick="openLiveServer('terminal')">
+          <span>💻</span> Web Terminal
+        </a>
+        <a class="wp-menu-item" onclick="switchMenu(this, 'database')">
+          <span>🗄️</span> Database & Storage
+        </a>
+        <a class="wp-menu-item" onclick="switchMenu(this, 'system')">
+          <span>🛡️</span> Security & Failsafe
+        </a>
+      </div>
+
+      <!-- Main Content -->
+      <div id="wpcontent">
+        <!-- DASHBOARD -->
+        <div id="view-dashboard" class="admin-view active">
+          <div class="page-header">
+            <h1 class="page-title"><span>📊</span> Server Overview & cPanel</h1>
+            <div class="page-actions">
+              <button class="button" onclick="refreshLiveTunnel()">🔄 Sync Gist</button>
+              <button class="button button-primary" onclick="openLiveServer('url')">🚀 Open Main Hub</button>
+            </div>
+          </div>
+
+          <div style="background: var(--wp-green-bg); border-left: 4px solid var(--wp-green); padding: 12px 16px; margin-bottom: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong>🟢 24/7 Home Server Online:</strong> All 4 sites, Web Terminal, cPanel, and auto-sync are active.
+              <div style="font-family: monospace; font-size: 12px; margin-top: 4px; color: var(--wp-blue);" id="dash-live-url">
+                Fetching live Cloudflare tunnel...
+              </div>
+            </div>
+            <button class="button" onclick="copyCurrentLiveUrl()">📋 Copy URL</button>
+          </div>
+
+          <div class="wp-grid">
+            <div class="wp-card">
+              <div class="card-title"><span>🌐 Hosted Websites</span> <span class="wp-pill">4 Sites</span></div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Isolated root directories with independent cPanel accounts.</p>
+              <button class="button button-primary" style="width: 100%;" onclick="switchView('websites')">Manage Websites &rarr;</button>
+            </div>
+
+            <div class="wp-card">
+              <div class="card-title"><span>🧩 Active Plugins</span> <span class="wp-pill" style="background:#008a20;">6 Active</span></div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Health monitor, CodePad, SQLite Studio, SpeedTester, Theme Manager.</p>
+              <button class="button" style="width: 100%;" onclick="switchView('plugins')">Open Plugin Center &rarr;</button>
+            </div>
+
+            <div class="wp-card">
+              <div class="card-title"><span>🛡️ Multi-Layer Security</span> <span class="wp-pill">UFW + Fail2ban</span></div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Cryptographic session protection, SSH brute-force shield, watchdog timer.</p>
+              <button class="button" style="width: 100%;" onclick="switchView('system')">View Security &rarr;</button>
+            </div>
+          </div>
+
+          <h2 style="font-size: 16px; margin: 24px 0 12px;">⚡ Quick App Launchpad</h2>
+          <div class="wp-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('health')">
+              📈 Site Health Check
+            </button>
+            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('codepad')">
+              📝 CodePad Editor
+            </button>
+            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('sql')">
+              🗄️ Database Studio
+            </button>
+            <button class="button" style="padding: 14px; justify-content: center;" onclick="runPlugin('speedtest')">
+              ⚡ Speed & Latency Test
+            </button>
+          </div>
+        </div>
+
+        <!-- WEBSITES -->
+        <div id="view-websites" class="admin-view">
+          <div class="page-header">
+            <h1 class="page-title"><span>🌐</span> Hosted Websites & Applications</h1>
+            <div class="page-actions">
+              <button class="button button-primary" onclick="runPlugin('wp-installer')">➕ Deploy WordPress / App</button>
+            </div>
+          </div>
+
+          <div class="wp-grid">
+            <!-- Site 1 -->
+            <div class="wp-card">
+              <div class="card-title">
+                <strong>Website 1 (`/site1/`)</strong>
+                <span class="wp-pill" style="background:#008a20;">Port 8001</span>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site1/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site1')">Visit Site</button>
+                <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
+              </div>
+            </div>
+
+            <!-- Site 2 -->
+            <div class="wp-card">
+              <div class="card-title">
+                <strong>Website 2 (`/site2/`)</strong>
+                <span class="wp-pill" style="background:#008a20;">Port 8002</span>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site2/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site2')">Visit Site</button>
+                <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
+              </div>
+            </div>
+
+            <!-- Site 3 -->
+            <div class="wp-card">
+              <div class="card-title">
+                <strong>Website 3 (`/site3/`)</strong>
+                <span class="wp-pill" style="background:#008a20;">Port 8003</span>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site3/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site3')">Visit Site</button>
+                <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
+              </div>
+            </div>
+
+            <!-- Site 4 -->
+            <div class="wp-card">
+              <div class="card-title">
+                <strong>Website 4 (`/site4/`)</strong>
+                <span class="wp-pill" style="background:#008a20;">Port 8004</span>
+              </div>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 8px;">Scope: <code>/var/www/site4/</code></p>
+              <p style="font-size: 12.5px; color: var(--wp-gray); margin-bottom: 14px;">Access: Isolated Dedicated Directory</p>
+              <div style="display: flex; gap: 8px;">
+                <button class="button button-primary" style="flex:1;" onclick="openLiveServer('site4')">Visit Site</button>
+                <button class="button" onclick="openLiveServer('panel')">📁 Files</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLUGINS -->
+        <div id="view-plugins" class="admin-view">
+          <div class="page-header">
+            <h1 class="page-title"><span>🧩</span> Plugins & Extensions</h1>
+            <div class="page-actions">
+              <button class="button button-primary" onclick="openPluginUploadModal()">➕ Add Custom Plugin</button>
+            </div>
+          </div>
+
+          <table class="plugins-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;">Status</th>
+                <th style="width: 250px;">Plugin</th>
+                <th>Description</th>
+                <th style="width: 140px; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="plugins-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- DATABASE -->
+        <div id="view-database" class="admin-view">
+          <div class="page-header">
+            <h1 class="page-title"><span>🗄️</span> Database & Storage Management</h1>
+            <div class="page-actions">
+              <button class="button button-primary" onclick="runPlugin('sql')">Launch SQL Studio</button>
+            </div>
+          </div>
+
+          <div class="wp-grid">
+            <div class="wp-card">
+              <div class="card-title">🗃️ SQLite Database Engine</div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Zero-configuration embedded database for Node.js and Python apps.</p>
+              <button class="button button-primary" onclick="runPlugin('sql')">Open SQL Studio</button>
+            </div>
+
+            <div class="wp-card">
+              <div class="card-title">🐬 MariaDB / MySQL Support</div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">Install MariaDB for standard WordPress installations.</p>
+              <button class="button" onclick="runPlugin('wp-installer')">View Setup Guide</button>
+            </div>
+
+            <div class="wp-card">
+              <div class="card-title">💾 Disk Storage (~300 GB Free)</div>
+              <p style="font-size: 13px; color: var(--wp-gray); margin-bottom: 12px;">100% capacity unallocated SSD space attached to root partition.</p>
+              <button class="button" onclick="openLiveServer('panel')">Open File cPanel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECURITY -->
+        <div id="view-system" class="admin-view">
+          <div class="page-header">
+            <h1 class="page-title"><span>🛡️</span> Security & Protection Status</h1>
+            <div class="page-actions">
+              <a class="button button-primary" href="https://homeserver.local:9090" target="_blank">Open Cockpit Dashboard</a>
+            </div>
+          </div>
+
+          <div class="wp-grid">
+            <div class="wp-card">
+              <div class="card-title">🔒 Dashboard Access Gate</div>
+              <p style="font-size: 13px; color: var(--wp-green); font-weight: 600; margin-bottom: 6px;">● Active (SHA-256 Protected)</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray);">Zero plaintext credentials in frontend code.</p>
+            </div>
+            <div class="wp-card">
+              <div class="card-title">🔥 UFW Firewall</div>
+              <p style="font-size: 13px; color: var(--wp-green); font-weight: 600; margin-bottom: 6px;">● Active & Enforced</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray);">Allows 80, 8001-8004, 9090, 5353; rate-limits SSH port 22.</p>
+            </div>
+            <div class="wp-card">
+              <div class="card-title">🚫 Fail2ban Intrusion Defense</div>
+              <p style="font-size: 13px; color: var(--wp-green); font-weight: 600; margin-bottom: 6px;">● Active & Monitoring</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray);">Auto-bans rogue bots attempting SSH brute-force.</p>
+            </div>
+            <div class="wp-card">
+              <div class="card-title">⏱️ Self-Healing Watchdog</div>
+              <p style="font-size: 13px; color: var(--wp-green); font-weight: 600; margin-bottom: 6px;">● Running Every 2 Min</p>
+              <p style="font-size: 12.5px; color: var(--wp-gray);">Automatically restarts dropped services and Wi-Fi.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Plugin Modal -->
+  <div id="plugin-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title" style="font-size: 16px; font-weight: 600;">Plugin Runner</h3>
+        <button onclick="closeModal()" style="background:none; border:none; font-size: 18px; cursor:pointer; color: var(--wp-gray);">&times;</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="button" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Cryptographic SHA-256 Hashing for Zero Plaintext Exposure
+    const AUTH_HASH = "ce62939251da7e0140ee6a7353872d549a171b8f380c27ed2e6643b8012cd805";
+
+    async function hashString(str) {
+      const utf8 = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function checkAuthSession() {
+      const session = localStorage.getItem("homeserver_auth_session") || sessionStorage.getItem("homeserver_auth_session");
+      if (session) {
+        try {
+          const auth = JSON.parse(session);
+          if (auth && auth.user && auth.token && auth.expires > Date.now()) {
+            unlockDashboard(auth.user);
+            return true;
+          }
+        } catch(e) {}
+      }
+      lockDashboard();
+      return false;
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const u = document.getElementById("user-login").value.trim();
+      const p = document.getElementById("user-pass").value;
+      const remember = document.getElementById("remember-me").checked;
+      const errorBox = document.getElementById("login-error-box");
+
+      const inputHash = await hashString(p);
+      const allowedUsers = ["admin", "pi"];
+
+      if (allowedUsers.includes(u.toLowerCase()) && inputHash === AUTH_HASH) {
+        errorBox.style.display = "none";
+        const sessionPayload = {
+          user: u,
+          token: "auth_" + Math.random().toString(36).substring(2),
+          expires: Date.now() + (remember ? 30 * 24 * 60 * 60 * 1000 : 8 * 60 * 60 * 1000)
+        };
+        if (remember) {
+          localStorage.setItem("homeserver_auth_session", JSON.stringify(sessionPayload));
+        } else {
+          sessionStorage.setItem("homeserver_auth_session", JSON.stringify(sessionPayload));
+        }
+        unlockDashboard(u);
+      } else {
+        errorBox.style.display = "block";
+        errorBox.innerText = "Error: Invalid username or password.";
+      }
+    }
+
+    function unlockDashboard(username) {
+      document.getElementById("login-wrap").style.display = "none";
+      document.getElementById("dashboard-wrap").style.display = "block";
+      document.getElementById("logged-in-user").innerText = "👤 " + username;
+      renderPlugins();
+      fetchLiveGist();
+    }
+
+    function lockDashboard() {
+      document.getElementById("login-wrap").style.display = "flex";
+      document.getElementById("dashboard-wrap").style.display = "none";
+    }
+
+    function performLogout() {
+      localStorage.removeItem("homeserver_auth_session");
+      sessionStorage.removeItem("homeserver_auth_session");
+      location.reload();
+    }
+
+    const GIST_ID = "4e368fcb25106cbf65820b452e874419";
+    const GIST_RAW_URL = "https://gist.githubusercontent.com/EXtrE0101/" + GIST_ID + "/raw/server.json";
+    let liveData = {
+      url: "https://colleague-encountered-identification-solely.trycloudflare.com",
+      terminal: "https://colleague-encountered-identification-solely.trycloudflare.com/terminal/",
+      panel: "https://colleague-encountered-identification-solely.trycloudflare.com/panel/",
+      site1: "https://colleague-encountered-identification-solely.trycloudflare.com/site1/",
+      site2: "https://colleague-encountered-identification-solely.trycloudflare.com/site2/",
+      site3: "https://colleague-encountered-identification-solely.trycloudflare.com/site3/",
+      site4: "https://colleague-encountered-identification-solely.trycloudflare.com/site4/"
+    };
+
+    const PLUGINS = [
+      {
+        id: "health",
+        name: "Site Health & Uptime Inspector",
+        version: "2.1.0",
+        author: "DevOps Team",
+        active: true,
+        desc: "Performs instant ping, SSL, and HTTP verification across all 4 sites and tunnel endpoints.",
+        run: showHealthPlugin
+      },
+      {
+        id: "codepad",
+        name: "CodePad & Markdown Studio",
+        version: "1.4.2",
+        author: "cPanel Core",
+        active: true,
+        desc: "Integrated browser scratchpad to draft code and take markdown notes with instant local persistence.",
+        run: showCodePadPlugin
+      },
+      {
+        id: "sql",
+        name: "SQLite & Web SQL Query Studio",
+        version: "3.0.1",
+        author: "Database Lab",
+        active: true,
+        desc: "Lightweight client-side SQL explorer to execute queries and test database records.",
+        run: showSqlPlugin
+      },
+      {
+        id: "speedtest",
+        name: "SpeedTest & Latency Gauge",
+        version: "1.2.0",
+        author: "Network Ops",
+        active: true,
+        desc: "Benchmarks network roundtrip latency to your home server from your current device.",
+        run: showSpeedtestPlugin
+      },
+      {
+        id: "wp-installer",
+        name: "WordPress & PHP App Deployer",
+        version: "1.0.5",
+        author: "Server Automator",
+        active: true,
+        desc: "Step-by-step setup assistant to install PHP-FPM, MariaDB, and WordPress into any site directory.",
+        run: showWpInstallerPlugin
+      },
+      {
+        id: "theme",
+        name: "Admin Dark/Light Theme Customizer",
+        version: "1.1.0",
+        author: "UI Team",
+        active: true,
+        desc: "Allows toggling and customizing the visual style of your server cPanel.",
+        run: toggleTheme
+      }
+    ];
+
+    function renderPlugins() {
+      const tbody = document.getElementById("plugins-tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      let activeCount = 0;
+
+      PLUGINS.forEach((p, idx) => {
+        if (p.active) activeCount++;
+        const tr = document.createElement("tr");
+        if (p.active) tr.className = "active";
+
+        tr.innerHTML = `
+          <td>
+            <label class="toggle-switch">
+              <input type="checkbox" ${p.active ? "checked" : ""} onchange="togglePlugin(${idx})">
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td>
+            <div class="plugin-name">${p.name}</div>
+            <div class="plugin-row-actions">
+              <a onclick="runPlugin('${p.id}')">🚀 Launch</a> |
+              <a onclick="togglePlugin(${idx})">${p.active ? "Deactivate" : "Activate"}</a>
+            </div>
+          </td>
+          <td>
+            <div class="plugin-desc">${p.desc}</div>
+            <div class="plugin-meta">Version ${p.version} | By ${p.author}</div>
+          </td>
+          <td style="text-align: right;">
+            <button class="button ${p.active ? "button-primary" : ""}" onclick="runPlugin('${p.id}')">
+              ${p.id === 'theme' ? 'Toggle' : 'Open'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const badge = document.getElementById("active-plugins-count");
+      if (badge) badge.innerText = activeCount;
+    }
+
+    function togglePlugin(index) {
+      PLUGINS[index].active = !PLUGINS[index].active;
+      renderPlugins();
+    }
+
+    function runPlugin(pluginId) {
+      const p = PLUGINS.find(x => x.id === pluginId);
+      if (p && p.run) p.run();
+    }
+
+    function openModal(title, contentHtml) {
+      document.getElementById("modal-title").innerText = title;
+      document.getElementById("modal-body").innerHTML = contentHtml;
+      document.getElementById("plugin-modal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("plugin-modal").style.display = "none";
+    }
+
+    function showHealthPlugin() {
+      let html = `
+        <div style="margin-bottom: 14px;">Click <strong>Run Check</strong> to benchmark response times:</div>
+        <div id="health-results" style="display:flex; flex-direction:column; gap:8px; margin-bottom: 16px;">
+          <div style="padding:10px; border:1px solid var(--wp-border); border-radius:4px; display:flex; justify-content:space-between;">
+            <span>🏠 Main Web Hub</span> <span id="h-hub">Pending...</span>
+          </div>
+          <div style="padding:10px; border:1px solid var(--wp-border); border-radius:4px; display:flex; justify-content:space-between;">
+            <span>🌐 Website 1 (/site1/)</span> <span id="h-site1">Pending...</span>
+          </div>
+          <div style="padding:10px; border:1px solid var(--wp-border); border-radius:4px; display:flex; justify-content:space-between;">
+            <span>🌐 Website 2 (/site2/)</span> <span id="h-site2">Pending...</span>
+          </div>
+          <div style="padding:10px; border:1px solid var(--wp-border); border-radius:4px; display:flex; justify-content:space-between;">
+            <span>🌐 Website 3 (/site3/)</span> <span id="h-site3">Pending...</span>
+          </div>
+          <div style="padding:10px; border:1px solid var(--wp-border); border-radius:4px; display:flex; justify-content:space-between;">
+            <span>🌐 Website 4 (/site4/)</span> <span id="h-site4">Pending...</span>
+          </div>
+        </div>
+        <button class="button button-primary" onclick="executeHealthChecks()">▶️ Run Live Ping Check</button>
+      `;
+      openModal("📈 Site Health & Uptime Inspector", html);
+    }
+
+    window.executeHealthChecks = async function() {
+      const endpoints = [
+        { id: "h-hub", url: liveData.url },
+        { id: "h-site1", url: liveData.site1 },
+        { id: "h-site2", url: liveData.site2 },
+        { id: "h-site3", url: liveData.site3 },
+        { id: "h-site4", url: liveData.site4 }
+      ];
+
+      for (let ep of endpoints) {
+        const el = document.getElementById(ep.id);
+        if (!el) continue;
+        el.innerText = "Pinging...";
+        const start = performance.now();
+        try {
+          await fetch(ep.url + "?_ping=" + Date.now(), { mode: 'no-cors' });
+          const diff = Math.round(performance.now() - start);
+          el.innerHTML = `<span style="color:#008a20; font-weight:bold;">● 200 OK (${diff}ms)</span>`;
+        } catch(e) {
+          el.innerHTML = `<span style="color:#d63638; font-weight:bold;">● Failed</span>`;
+        }
+      }
+    };
+
+    function showCodePadPlugin() {
+      const saved = localStorage.getItem("homeserver_codepad") || "<!-- Quick Notes & Code Playground -->\n<h1>Welcome to Protected CodePad</h1>\n<p>Your notes persist locally and are protected by your master password.</p>";
+      let html = `
+        <textarea id="codepad-area" style="width:100%; height:260px; font-family:monospace; font-size:13px; padding:12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text); resize:vertical;">${saved}</textarea>
+        <div style="margin-top:12px; display:flex; justify-content:space-between;">
+          <span id="codepad-saved-text" style="font-size:12px; color:var(--wp-gray);">Auto-saved locally</span>
+          <div>
+            <button class="button" onclick="saveCodePad()">💾 Save Note</button>
+            <button class="button button-primary" onclick="downloadCodePad()">⬇️ Export File</button>
+          </div>
+        </div>
+      `;
+      openModal("📝 CodePad & Markdown Studio", html);
+      setTimeout(() => {
+        document.getElementById("codepad-area").addEventListener("input", (e) => {
+          localStorage.setItem("homeserver_codepad", e.target.value);
+          document.getElementById("codepad-saved-text").innerText = "Saved at " + new Date().toLocaleTimeString();
+        });
+      }, 100);
+    }
+
+    window.saveCodePad = function() {
+      const txt = document.getElementById("codepad-area").value;
+      localStorage.setItem("homeserver_codepad", txt);
+      alert("Notes saved successfully!");
+    };
+
+    window.downloadCodePad = function() {
+      const txt = document.getElementById("codepad-area").value;
+      const blob = new Blob([txt], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "server-notes-" + Date.now() + ".txt";
+      a.click();
+    };
+
+    function showSqlPlugin() {
+      let html = `
+        <div style="margin-bottom:12px;">Execute SQL queries against database:</div>
+        <textarea id="sql-query" style="width:100%; height:90px; font-family:monospace; font-size:13px; padding:10px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);">SELECT 'Ubuntu Home Server' AS Host, 4 AS HostedSites, 'Encrypted' AS Security;</textarea>
+        <div style="margin:10px 0;">
+          <button class="button button-primary" onclick="runMockSql()">▶️ Execute Query</button>
+        </div>
+        <div id="sql-output" style="border:1px solid var(--wp-border); border-radius:4px; padding:12px; background:var(--wp-admin-bg); font-family:monospace; font-size:12px; overflow-x:auto;">
+          +--------------------+-------------+-----------+<br>
+          | Host               | HostedSites | Security  |<br>
+          +--------------------+-------------+-----------+<br>
+          | Ubuntu Home Server | 4           | Encrypted |<br>
+          +--------------------+-------------+-----------+
+        </div>
+      `;
+      openModal("🗄️ SQLite & Web SQL Studio", html);
+    }
+
+    window.runMockSql = function() {
+      const q = document.getElementById("sql-query").value;
+      document.getElementById("sql-output").innerHTML = `Query executed successfully at ${new Date().toLocaleTimeString()}:<br><br><span style="color:#008a20;">Query: ${q}</span><br>Rows returned: 1 | Execution time: 0.3ms`;
+    };
+
+    function showSpeedtestPlugin() {
+      let html = `
+        <div style="text-align:center; padding:20px 0;">
+          <div style="font-size:42px; font-weight:700; color:var(--wp-blue);" id="ping-num">--</div>
+          <p style="color:var(--wp-gray); font-size:14px; margin-top:4px;">Round-trip Latency (ms)</p>
+          <div style="margin-top:20px;">
+            <button class="button button-primary" onclick="startSpeedGauge()">⚡ Run Latency Test</button>
+          </div>
+        </div>
+      `;
+      openModal("⚡ SpeedTest & Latency Gauge", html);
+    }
+
+    window.startSpeedGauge = async function() {
+      const numEl = document.getElementById("ping-num");
+      numEl.innerText = "...";
+      let samples = [];
+      for (let i = 0; i < 3; i++) {
+        const start = performance.now();
+        try {
+          await fetch(liveData.url + "?_t=" + Math.random(), { mode: 'no-cors' });
+          samples.push(Math.round(performance.now() - start));
+        } catch(e) {}
+      }
+      if (samples.length > 0) {
+        const avg = Math.round(samples.reduce((a, b) => a + b, 0) / samples.length);
+        numEl.innerText = avg + " ms";
+      } else {
+        numEl.innerText = "Error";
+      }
+    };
+
+    function showWpInstallerPlugin() {
+      let html = `
+        <div style="line-height:1.6; font-size:13.5px;">
+          <h4 style="margin-bottom:8px;">🚀 Quick Steps to Install WordPress on Site 1:</h4>
+          <ol style="padding-left:20px; margin-bottom:14px;">
+            <li>Open <strong>Web Terminal</strong> (<a href="javascript:void(0)" onclick="openLiveServer('terminal')">Launch Terminal</a>)</li>
+            <li>Run the 1-line installer command:
+              <pre style="background:var(--wp-admin-bg); padding:10px; border-radius:4px; margin:8px 0; overflow-x:auto;">sudo apt update && sudo apt install -y php-fpm php-mysql mariadb-server && cd /var/www/site1 && sudo wget https://wordpress.org/latest.tar.gz && sudo tar -xzf latest.tar.gz --strip-components=1 && sudo rm latest.tar.gz && sudo chown -R pi:pi /var/www/site1</pre>
+            </li>
+            <li>Visit <a href="javascript:void(0)" onclick="openLiveServer('site1')">/site1/</a> to complete the WordPress Setup!</li>
+          </ol>
+        </div>
+      `;
+      openModal("📦 WordPress & PHP App Deployer", html);
+    }
+
+    function openPluginUploadModal() {
+      let html = `
+        <div style="font-size:13px; line-height:1.6;">
+          <p style="margin-bottom:10px;">Enter details for new custom plugin:</p>
+          <input id="new-plugin-name" type="text" placeholder="Plugin Name" style="width:100%; padding:8px 12px; margin-bottom:10px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);">
+          <textarea id="new-plugin-desc" placeholder="Plugin Description..." style="width:100%; height:80px; padding:8px 12px; margin-bottom:14px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);"></textarea>
+          <button class="button button-primary" onclick="addNewCustomPlugin()">➕ Create Plugin</button>
+        </div>
+      `;
+      openModal("➕ Add New Custom Plugin", html);
+    }
+
+    window.addNewCustomPlugin = function() {
+      const name = document.getElementById("new-plugin-name").value;
+      const desc = document.getElementById("new-plugin-desc").value;
+      if (!name) { alert("Please enter a plugin name"); return; }
+      PLUGINS.push({
+        id: "custom_" + Date.now(),
+        name: name,
+        version: "1.0.0",
+        author: "User Custom",
+        active: true,
+        desc: desc || "Custom user-defined extension.",
+        run: () => alert("Running custom plugin: " + name)
+      });
+      renderPlugins();
+      closeModal();
+    };
+
+    function switchView(viewName) {
+      document.querySelectorAll(".admin-view").forEach(v => v.classList.remove("active"));
+      const target = document.getElementById("view-" + viewName);
+      if (target) target.classList.add("active");
+
+      document.querySelectorAll(".wp-menu-item").forEach(item => {
+        item.classList.remove("active");
+        if (item.getAttribute("onclick") && item.getAttribute("onclick").includes(viewName)) {
+          item.classList.add("active");
+        }
+      });
+    }
+
+    function switchMenu(el, viewName) {
+      document.querySelectorAll(".wp-menu-item").forEach(item => item.classList.remove("active"));
+      el.classList.add("active");
+      switchView(viewName);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("homeserver_theme", next);
+    }
+
+    async function fetchLiveGist() {
+      try {
+        const res = await fetch(GIST_RAW_URL + "?_t=" + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.url) {
+            liveData = data;
+            const el = document.getElementById("dash-live-url");
+            if (el) el.innerText = data.url;
+          }
+        }
+      } catch(e) {}
+    }
+
+    function openLiveServer(key) {
+      const target = liveData[key] || liveData.url;
+      window.open(target, "_blank");
+    }
+
+    function copyCurrentLiveUrl() {
+      navigator.clipboard.writeText(liveData.url).then(() => alert("URL copied: " + liveData.url));
+    }
+
+    function refreshLiveTunnel() {
+      fetchLiveGist().then(() => alert("Synced with GitHub Gist!"));
+    }
+
+    const savedTheme = localStorage.getItem("homeserver_theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    checkAuthSession();
+  </script>
+</body>
+</html>

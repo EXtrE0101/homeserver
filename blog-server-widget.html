@@ -1,0 +1,210 @@
+<!-- ========================================================================= -->
+<!-- 🚀 Ubuntu Home Server - Dynamic Blog & Portal Widget                     -->
+<!-- Auto-fetches live tunnel URLs from GitHub Gist with Multi-Source Fallbacks -->
+<!-- ========================================================================= -->
+
+<div id="home-server-widget" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 440px; margin: 20px auto; padding: 22px; border-radius: 16px; background: #18181b; color: #f4f4f5; box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.5); border: 1px solid #27272a;">
+  
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 40px; height: 40px; border-radius: 10px; background: #27272a; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+        🖥️
+      </div>
+      <div>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #ffffff;">Ubuntu Home Server</h3>
+        <p id="hs-status" style="margin: 2px 0 0 0; font-size: 12px; color: #a1a1aa;">Connecting to server discovery...</p>
+      </div>
+    </div>
+    <span id="hs-badge" style="padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; background: #27272a; color: #a1a1aa; border: 1px solid #3f3f46;">
+      • Checking
+    </span>
+  </div>
+
+  <!-- Live URL Display Bar -->
+  <div style="margin-bottom: 14px; padding: 8px 12px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-family: monospace; font-size: 11px; color: #38bdf8;">
+    <span id="hs-url-text" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 290px;">
+      https://drilling-cabinet-things-considering.trycloudflare.com
+    </span>
+    <button onclick="copyCurrentUrl()" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; padding: 2px 6px;" title="Copy URL">
+      📋
+    </button>
+  </div>
+
+  <!-- Primary Launch Button -->
+  <button id="hs-main-btn" onclick="launchServer('url')" style="width: 100%; padding: 12px 18px; border-radius: 10px; background: #2563eb; color: #ffffff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;">
+    <span>🚀 Open Server Main Hub</span>
+  </button>
+
+  <!-- Quick Access Grid -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+    <button onclick="launchServer('terminal')" style="padding: 10px; border-radius: 8px; background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; font-size: 12px; font-weight: 500; cursor: pointer; text-align: left; transition: background 0.2s;">
+      💻 Web Terminal
+    </button>
+    <button onclick="launchServer('panel')" style="padding: 10px; border-radius: 8px; background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; font-size: 12px; font-weight: 500; cursor: pointer; text-align: left; transition: background 0.2s;">
+      📁 Web cPanel
+    </button>
+    <button onclick="launchServer('site1')" style="padding: 10px; border-radius: 8px; background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; font-size: 12px; font-weight: 500; cursor: pointer; text-align: left; transition: background 0.2s;">
+      🌐 Website 1
+    </button>
+    <button onclick="launchServer('site2')" style="padding: 10px; border-radius: 8px; background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; font-size: 12px; font-weight: 500; cursor: pointer; text-align: left; transition: background 0.2s;">
+      🌐 Website 2
+    </button>
+    <button onclick="launchServer('site3')" style="padding: 10px; border-radius: 8px; background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; font-size: 12px; font-weight: 500; cursor: pointer; text-align: left; transition: background 0.2s;">
+      🌐 Website 3
+    </button>
+    <button onclick="launchServer('site4')" style="padding: 10px; border-radius: 8px; background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; font-size: 12px; font-weight: 500; cursor: pointer; text-align: left; transition: background 0.2s;">
+      🌐 Website 4
+    </button>
+  </div>
+
+  <!-- Footer Info & Refresh -->
+  <div style="text-align: center; font-size: 11px; color: #71717a; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #27272a; padding-top: 12px;">
+    <span id="hs-updated">Last sync: checking...</span>
+    <a href="javascript:void(0)" onclick="fetchServerLinks()" style="color: #60a5fa; text-decoration: none; font-weight: 500;">
+      🔄 Refresh
+    </a>
+  </div>
+</div>
+
+<script>
+(function() {
+  const GIST_ID = "4e368fcb25106cbf65820b452e874419";
+  const GIST_API_URL = "https://api.github.com/gists/" + GIST_ID;
+  const GIST_RAW_URL = "https://gist.githubusercontent.com/EXtrE0101/" + GIST_ID + "/raw/server.json";
+  
+  // Default fallback if initial fetch encounters network latency
+  const DEFAULT_FALLBACK = {
+    url: "https://drilling-cabinet-things-considering.trycloudflare.com",
+    terminal: "https://drilling-cabinet-things-considering.trycloudflare.com/terminal/",
+    panel: "https://drilling-cabinet-things-considering.trycloudflare.com/panel/",
+    site1: "https://drilling-cabinet-things-considering.trycloudflare.com/site1/",
+    site2: "https://drilling-cabinet-things-considering.trycloudflare.com/site2/",
+    site3: "https://drilling-cabinet-things-considering.trycloudflare.com/site3/",
+    site4: "https://drilling-cabinet-things-considering.trycloudflare.com/site4/",
+    updated_at: new Date().toISOString()
+  };
+
+  let serverLinks = null;
+
+  // Load from local storage cache if available
+  try {
+    const cached = localStorage.getItem("homeserver_links");
+    if (cached) {
+      serverLinks = JSON.parse(cached);
+      updateUI(serverLinks);
+    }
+  } catch(e) {}
+
+  if (!serverLinks) {
+    serverLinks = DEFAULT_FALLBACK;
+    updateUI(serverLinks);
+  }
+
+  function updateUI(data) {
+    if (!data || !data.url) return;
+    const statusEl = document.getElementById('hs-status');
+    const badgeEl = document.getElementById('hs-badge');
+    const urlText = document.getElementById('hs-url-text');
+    const updatedEl = document.getElementById('hs-updated');
+    const mainBtn = document.getElementById('hs-main-btn');
+
+    statusEl.innerText = "Online & Ready";
+    badgeEl.innerText = "● Online";
+    badgeEl.style.background = "rgba(34, 197, 94, 0.15)";
+    badgeEl.style.color = "#4ade80";
+    badgeEl.style.borderColor = "rgba(34, 197, 94, 0.3)";
+
+    urlText.innerText = data.url;
+    mainBtn.disabled = false;
+    mainBtn.style.background = "#2563eb";
+    mainBtn.style.cursor = "pointer";
+
+    if (data.updated_at) {
+      try {
+        const d = new Date(data.updated_at);
+        updatedEl.innerText = `Synced: ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+      } catch(e) {
+        updatedEl.innerText = "Synced: Live";
+      }
+    }
+  }
+
+  async function fetchServerLinks() {
+    const statusEl = document.getElementById('hs-status');
+    const badgeEl = document.getElementById('hs-badge');
+    
+    statusEl.innerText = "Fetching latest live URL...";
+    badgeEl.innerText = "• Syncing";
+    badgeEl.style.background = "#27272a";
+    badgeEl.style.color = "#d4d4d8";
+
+    let fetchedData = null;
+
+    // Method 1: Fetch directly via GitHub API (Instant, no Fastly 5-min cache lag)
+    try {
+      const res = await fetch(GIST_API_URL, {
+        headers: { 'Accept': 'application/vnd.github+json' }
+      });
+      if (res.ok) {
+        const gist = await res.json();
+        if (gist.files && gist.files["server.json"] && gist.files["server.json"].content) {
+          fetchedData = JSON.parse(gist.files["server.json"].content);
+        }
+      }
+    } catch(e) {
+      console.warn("GitHub API fetch error:", e);
+    }
+
+    // Method 2: Fallback to Raw Gist URL
+    if (!fetchedData) {
+      try {
+        const res = await fetch(GIST_RAW_URL + "?_t=" + Date.now());
+        if (res.ok) {
+          fetchedData = await res.json();
+        }
+      } catch(e) {
+        console.warn("Gist raw URL fetch error:", e);
+      }
+    }
+
+    if (fetchedData && fetchedData.url) {
+      serverLinks = fetchedData;
+      try {
+        localStorage.setItem("homeserver_links", JSON.stringify(serverLinks));
+      } catch(e) {}
+      updateUI(serverLinks);
+    } else {
+      if (serverLinks) {
+        updateUI(serverLinks);
+      } else {
+        statusEl.innerText = "Unable to fetch live URL";
+        badgeEl.innerText = "● Offline";
+        badgeEl.style.background = "rgba(239, 68, 68, 0.15)";
+        badgeEl.style.color = "#f87171";
+      }
+    }
+  }
+
+  window.launchServer = function(targetKey) {
+    if (!serverLinks || !serverLinks[targetKey]) {
+      alert("Server link not available yet. Please click Refresh.");
+      return;
+    }
+    window.open(serverLinks[targetKey], '_blank');
+  };
+
+  window.copyCurrentUrl = function() {
+    if (serverLinks && serverLinks.url) {
+      navigator.clipboard.writeText(serverLinks.url).then(() => {
+        alert("Server URL copied to clipboard: " + serverLinks.url);
+      }).catch(() => {
+        prompt("Copy server URL:", serverLinks.url);
+      });
+    }
+  };
+
+  window.fetchServerLinks = fetchServerLinks;
+  fetchServerLinks();
+})();
+</script>

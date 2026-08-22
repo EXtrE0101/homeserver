@@ -1,0 +1,8 @@
+# Secrets and Credentials
+SERVER_CREDENTIALS_AND_COMMANDS.txt
+*.txt
+*.key
+*.pem
+*.log
+.env*
+.DS_Store

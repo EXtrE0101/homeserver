@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeServer Secure Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #18181b;
+      --border: #27272a;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    .spinner-wrapper {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+    }
+
+    .spinner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
+    }
+
+    .icon-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 26px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #09090b;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    .primary-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .sub-btn {
+      background: #27272a;
+      color: #e4e4e7;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid #3f3f46;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .sub-btn:hover {
+      background: #3f3f46;
+    }
+
+    .error-msg {
+      color: var(--red);
+      font-size: 12.5px;
+      margin-bottom: 12px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="auth-box">
+    <div class="icon-center" style="position:static; transform:none; font-size:40px; margin-bottom:12px;">🔒</div>
+    <h1>HomeServer Gate</h1>
+    <p class="subtitle">Enter master password to access server</p>
+
+    <div id="auth-error" class="error-msg">Incorrect password. Please try again.</div>
+
+    <form onsubmit="handlePortalAuth(event)">
+      <input type="password" id="portal-pass" class="input-field" placeholder="Master Password" required autofocus autocomplete="current-password">
+      <button type="submit" class="primary-btn">🔓 Unlock & Connect</button>
+    </form>
+
+    <div style="margin-top:16px; font-size:11.5px; color:var(--muted);">
+      <a href="cpanel.html" style="color:#60a5fa; text-decoration:none;">Open WordPress cPanel &rarr;</a>
+    </div>
+  </div>
+
+  <div class="container" id="redirect-box" style="display:none;">
+    <div class="spinner-wrapper">
+      <div class="spinner"></div>
+      <div class="icon-center">🚀</div>
+    </div>
+    <h1 id="red-title">Connecting...</h1>
+    <p class="subtitle" id="red-sub">Resolving live tunnel from GitHub Gist</p>
+
+    <div class="quick-links" id="quick-links-grid" style="display:none;">
+      <a id="lnk-cpanel" class="sub-btn" href="cpanel.html">🌐 WP cPanel</a>
+      <a id="lnk-terminal" class="sub-btn" href="#">💻 Terminal</a>
+      <a id="lnk-panel" class="sub-btn" href="#">📁 File cPanel</a>
+      <a id="lnk-site1" class="sub-btn" href="#">🌐 Website 1</a>
+      <a id="lnk-site2" class="sub-btn" href="#">🌐 Website 2</a>
+      <a id="lnk-site3" class="sub-btn" href="#">🌐 Website 3</a>
+      <a id="lnk-site4" class="sub-btn" href="#">🌐 Website 4</a>
+      <a class="sub-btn" href="https://homeserver.local:9090" target="_blank">⚙️ Cockpit</a>
+    </div>
+  </div>
+
+  <script>
+    const AUTH_HASH = "ce62939251da7e0140ee6a7353872d549a171b8f380c27ed2e6643b8012cd805";
+    const GIST_ID = "4e368fcb25106cbf65820b452e874419";
+    const GIST_RAW_URL = "https://gist.githubusercontent.com/EXtrE0101/" + GIST_ID + "/raw/server.json";
+
+    async function hashString(str) {
+      const utf8 = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function checkAuth() {
+      const auth = localStorage.getItem("homeserver_auth") || sessionStorage.getItem("homeserver_auth");
+      if (auth === "true") {
+        proceedToRedirect();
+      }
+    }
+
+    async function handlePortalAuth(e) {
+      e.preventDefault();
+      const p = document.getElementById("portal-pass").value;
+      const inputHash = await hashString(p);
+
+      if (inputHash === AUTH_HASH) {
+        localStorage.setItem("homeserver_auth", "true");
+        localStorage.setItem("homeserver_auth_session", JSON.stringify({
+          user: "admin",
+          token: "auth_" + Date.now(),
+          expires: Date.now() + 30 * 24 * 60 * 60 * 1000
+        }));
+        proceedToRedirect();
+      } else {
+        document.getElementById("auth-error").style.display = "block";
+      }
+    }
+
+    async function proceedToRedirect() {
+      document.getElementById("auth-box").style.display = "none";
+      document.getElementById("redirect-box").style.display = "block";
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const goParam = urlParams.get("go") || urlParams.get("to");
+      const isPause = urlParams.has("pause") || urlParams.has("manual");
+
+      let data = null;
+      try {
+        const res = await fetch(GIST_RAW_URL + "?_t=" + Date.now());
+        if (res.ok) data = await res.json();
+      } catch(e) {}
+
+      if (!data || !data.url) {
+        document.getElementById("red-title").innerText = "Server Offline";
+        document.getElementById("red-sub").innerText = "Unable to fetch live Cloudflare tunnel.";
+        return;
+      }
+
+      document.getElementById("lnk-terminal").href = data.terminal || data.url + "/terminal/";
+      document.getElementById("lnk-panel").href = data.panel || data.url + "/panel/";
+      document.getElementById("lnk-site1").href = data.site1 || data.url + "/site1/";
+      document.getElementById("lnk-site2").href = data.site2 || data.url + "/site2/";
+      document.getElementById("lnk-site3").href = data.site3 || data.url + "/site3/";
+      document.getElementById("lnk-site4").href = data.site4 || data.url + "/site4/";
+
+      if (isPause) {
+        document.getElementById("red-title").innerText = "Home Server Portal";
+        document.getElementById("red-sub").innerText = "Choose an endpoint to launch:";
+        document.getElementById("quick-links-grid").style.display = "grid";
+        return;
+      }
+
+      let targetUrl = data.url;
+      if (goParam === "terminal") targetUrl = data.terminal;
+      else if (goParam === "panel" || goParam === "cpanel") targetUrl = data.panel;
+      else if (goParam === "site1") targetUrl = data.site1;
+      else if (goParam === "site2") targetUrl = data.site2;
+      else if (goParam === "site3") targetUrl = data.site3;
+      else if (goParam === "site4") targetUrl = data.site4;
+
+      window.location.replace(targetUrl);
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
