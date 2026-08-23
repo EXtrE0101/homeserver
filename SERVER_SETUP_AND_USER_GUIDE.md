@@ -260,7 +260,70 @@ sudo systemctl restart nginx mongod filebrowser ttyd quicktunnel
 
 ---
 
-## 16. Troubleshooting & Maintenance
+## 16. Commercial Multi-Tenant Architecture & Server Assignment
+
+Your Ubuntu Home Server now supports full **Commercial Multi-Tenant Hosting & Service Reselling**:
+
+### 16.1 Roles & Permission Isolation (RBAC)
+* **SuperAdmin (`admin` / `pi`)**:
+  - Full system root control, Web Terminal, Cockpit, Nginx virtual hosts, Global MongoDB Master, Commercial billing & invoicing.
+* **Tenant / Client Accounts (`client_alex`, `client_nexus`, etc.)**:
+  - Isolated scoped login view in cPanel.
+  - Can only view, edit, and access their **assigned websites** and **dedicated MongoDB database**.
+  - Root terminal, system settings, firewall, and other clients' data are strictly restricted and hidden.
+  - Access to live Free Git API plugins, storage/bandwidth quotas, and commercial invoices.
+
+### 16.2 Commercial Hosting Plans
+| Plan Tier | Price | Websites | Bandwidth | Fast SSD | MongoDB Databases | Commercial Perks |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Starter** | $9 / mo | 1 Slot | 10 GB | 5 GB | 1 DB | Free SSL & Cloudflare CDN |
+| **Pro Developer** | $29 / mo | 3 Slots | 50 GB | 25 GB | 3 DBs | Custom Subdomain, Free Git APIs |
+| **Business & Agency** | $79 / mo | Unlimited | 200 GB | 100 GB | Dedicated DBs | White-Label Portal, Priority Watchdog |
+
+---
+
+## 17. 1-Click Site Slot Provisioning (`add-new-site.sh`)
+
+Provision a brand new isolated website slot and database for yourself or a client with a single command:
+
+```bash
+sudo bash add-new-site.sh <site_slug> <port> [template] [client_owner]
+```
+
+### Examples:
+* Static HTML Landing Page:
+  ```bash
+  sudo bash add-new-site.sh client-store 8005 html alex
+  ```
+* Python Flask Microservice:
+  ```bash
+  sudo bash add-new-site.sh api-gateway 8006 flask admin
+  ```
+* Node.js Express App:
+  ```bash
+  sudo bash add-new-site.sh react-app 8007 node dev_client
+  ```
+
+---
+
+## 18. Free Open Git APIs & Plugins Marketplace
+
+Integrated 100% free open-source public APIs from GitHub with zero subscription fees:
+
+1. **QR Code Generator Pro** (`api.qrserver.com`): High-res branded QR codes for tenant URLs and Wi-Fi.
+2. **IP & GeoLocation Intelligence** (`freeipapi.com`): Real-time visitor country flags, ASN, and city coordinates.
+3. **Global Currency & Forex Converter** (`open.er-api.com`): Live 160+ fiat currency conversion engine.
+4. **Open-Meteo Weather Intelligence** (`api.open-meteo.com`): Zero-key open source live weather forecasts.
+5. **SSL & DNS Cloudflare Resolver** (`cloudflare-dns.com`): DoH record lookup and SSL verification.
+6. **Mock Data & Database Seeder** (`randomuser.me`): Synthetic user generator to seed MongoDB in 1 click.
+7. **Website Screenshot & Meta Visualizer** (`api.microlink.io`): Live webpage visualizer & OG preview card.
+8. **Inspirational Quotes & AI Banner** (`dummyjson.com`): Motivational content widgets for websites.
+9. **GitHub Repository Stats & Release Tracker** (`api.github.com`): Live star counter and repo monitor.
+10. **Custom GitHub API Plugin Loader**: Add any open API repository URL dynamically as a permanent plugin.
+
+---
+
+## 19. Troubleshooting & Maintenance
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -272,3 +335,4 @@ sudo systemctl restart nginx mongod filebrowser ttyd quicktunnel
 ---
 
 *Guide generated for Ubuntu Home Server (`homeserver.local`).*
+

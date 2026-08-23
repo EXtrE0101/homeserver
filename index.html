@@ -438,12 +438,23 @@
 
     function executeRedirectWithData(goParam, data) {
       let targetUrl = data.url;
-      if (goParam === "site1") targetUrl = data.site1 || data.url + "/site1/";
-      else if (goParam === "site2") targetUrl = data.site2 || data.url + "/site2/";
-      else if (goParam === "site3") targetUrl = data.site3 || data.url + "/site3/";
-      else if (goParam === "site4") targetUrl = data.site4 || data.url + "/site4/";
-      else if (goParam === "terminal") targetUrl = data.terminal || data.url + "/terminal/";
-      else if (goParam === "panel") targetUrl = data.panel || data.url + "/panel/";
+      if (!goParam) {
+        window.location.replace(data.url);
+        return;
+      }
+      if (goParam === "cpanel") {
+        window.location.href = "cpanel.html";
+        return;
+      }
+      if (data[goParam]) {
+        targetUrl = data[goParam];
+      } else if (goParam === "terminal") {
+        targetUrl = data.terminal || data.url + "/terminal/";
+      } else if (goParam === "panel") {
+        targetUrl = data.panel || data.url + "/panel/";
+      } else {
+        targetUrl = data.url + "/" + goParam + "/";
+      }
 
       window.location.replace(targetUrl);
     }
