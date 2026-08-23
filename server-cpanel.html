@@ -3754,6 +3754,78 @@ print("${api.name}:", data)`;
       `);
     }
 
+    function openAddGitPluginModal() {
+      const sites = getScopedSites();
+      const siteOptions = sites.map(s => `<option value="${s.slug}">${s.name} (${s.path})</option>`).join('');
+      const html = `
+        <form onsubmit="submitCustomGitPlugin(event)">
+          <div class="login-field" style="margin-bottom:12px;">
+            <label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Git Repository URL</label>
+            <input type="url" id="custom-plugin-repo" placeholder="https://github.com/user/my-custom-api.git" required class="input-field" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px;">
+          </div>
+          <div class="login-field" style="margin-bottom:12px;">
+            <label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Plugin / API Name</label>
+            <input type="text" id="custom-plugin-name" placeholder="e.g. Custom AI & NLP Engine" required class="input-field" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px;">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Category</label>
+              <input type="text" id="custom-plugin-cat" placeholder="e.g. Machine Learning" value="Custom API" class="input-field" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px;">
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Target Site Slot</label>
+              <select id="custom-plugin-slot" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px;">
+                ${siteOptions}
+              </select>
+            </div>
+          </div>
+          <div class="login-field" style="margin-bottom:12px;">
+            <label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">API Endpoint URL</label>
+            <input type="url" id="custom-plugin-endpoint" placeholder="https://api.example.com/v1" class="input-field" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px;">
+          </div>
+          <div class="login-field" style="margin-bottom:16px;">
+            <label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Description</label>
+            <textarea id="custom-plugin-desc" rows="2" placeholder="Brief description of the API plugin" class="input-field" style="width:100%; padding:8px; border:1px solid var(--wp-border); border-radius:4px;"></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="button" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="button button-success">⚡ Install &amp; Activate Plugin</button>
+          </div>
+        </form>
+      `;
+      openModal("➕ Install Custom Git API / Plugin", html);
+    }
+
+    function submitCustomGitPlugin(e) {
+      e.preventDefault();
+      const repo = document.getElementById("custom-plugin-repo").value.trim();
+      const name = document.getElementById("custom-plugin-name").value.trim();
+      const cat = document.getElementById("custom-plugin-cat").value.trim() || "Custom API";
+      const slot = document.getElementById("custom-plugin-slot").value;
+      const endpoint = document.getElementById("custom-plugin-endpoint").value.trim() || repo;
+      const desc = document.getElementById("custom-plugin-desc").value.trim() || `Custom plugin integrated from ${repo}`;
+
+      const newId = "custom_" + Date.now();
+      const newPlugin = {
+        id: newId,
+        name: name,
+        category: cat,
+        desc: desc,
+        version: "1.0.0",
+        enabled: true,
+        site: slot,
+        icon: "🔌",
+        sampleQuery: endpoint
+      };
+
+      installedPluginsList.push(newPlugin);
+      localStorage.setItem("homeserver_installed_plugins", JSON.stringify(installedPluginsList));
+      logServerEvent("access", "200", "POST", `/api/plugins/install`, `Plugin '${name}' installed from ${repo}`);
+      renderInstalledPlugins();
+      closeModal();
+      alert(`🎉 Plugin '${name}' installed and activated on ${slot}!`);
+    }
+
     /* =========================================================================
        8. WEB FILE MANAGER & INTERACTIVE CODE EDITOR ENGINE (REAL VALUES)
        ========================================================================= */

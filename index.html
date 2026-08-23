@@ -358,10 +358,10 @@
     <p class="subtitle">Select a website or service to launch:</p>
 
     <div class="quick-links">
-      <a id="lnk-site1" class="sub-btn" href="#">🌐 Website 1 (PiCodeHub)</a>
-      <a id="lnk-site2" class="sub-btn" href="#">🌐 Website 2</a>
-      <a id="lnk-site3" class="sub-btn" href="#">🌐 Website 3</a>
-      <a id="lnk-site4" class="sub-btn" href="#">🌐 Website 4</a>
+      <a id="lnk-site1" class="sub-btn" href="?go=site1" onclick="openHubSite(event, 'site1')">🌐 Website 1 (PiCodeHub)</a>
+      <a id="lnk-site2" class="sub-btn" href="?go=site2" onclick="openHubSite(event, 'site2')">🌐 Website 2</a>
+      <a id="lnk-site3" class="sub-btn" href="?go=site3" onclick="openHubSite(event, 'site3')">🌐 Website 3</a>
+      <a id="lnk-site4" class="sub-btn" href="?go=site4" onclick="openHubSite(event, 'site4')">🌐 Website 4</a>
       <a id="lnk-cpanel" class="sub-btn" href="cpanel.html">⚙️ Shodh cPanel</a>
       <a id="lnk-terminal" class="sub-btn" href="#" onclick="routeToAdmin(event, 'terminal')">💻 Terminal</a>
     </div>
@@ -591,6 +591,16 @@
         executeRedirect(route);
       } else {
         showAuthBox(route);
+      }
+    }
+
+    function openHubSite(e, slot) {
+      if (e) e.preventDefault();
+      const lnk = document.getElementById("lnk-" + slot);
+      if (lnk && lnk.href && lnk.href !== "#" && !lnk.href.endsWith("#") && !lnk.href.startsWith("javascript:")) {
+        window.location.href = lnk.href;
+      } else {
+        window.location.href = window.location.pathname + "?go=" + slot;
       }
     }
 
