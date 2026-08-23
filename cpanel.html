@@ -773,31 +773,82 @@
         </div>
 
         <!-- ===================================================================
-             6. FREE PLUGINS & GIT APIS MARKETPLACE
+             6. FREE PLUGINS & GIT APIS MARKETPLACE (PUBLIC-APIS/PUBLIC-APIS)
              =================================================================== -->
         <div id="view-plugins" class="admin-view">
           <div class="page-header">
-            <h1 class="page-title"><span>🧩</span> Free Plugins & Open Git APIs Directory</h1>
+            <h1 class="page-title"><span>🧩</span> Free Plugins & Open Git APIs Marketplace</h1>
             <div class="page-actions">
-              <button class="button button-success" onclick="openAddGitPluginModal()">➕ Install Free Git API Plugin</button>
+              <a class="button button-sm" href="https://github.com/public-apis/public-apis" target="_blank" style="background:#24292e; color:#fff; border-color:#24292e;">⭐ public-apis/public-apis on GitHub</a>
+              <button class="button button-success" onclick="openAddGitPluginModal()">➕ Install Custom Git API</button>
             </div>
           </div>
 
-          <p style="font-size:13.5px; color:var(--wp-gray); margin-bottom:16px;">
-            Enhance your hosted sites and clients with 100% free open-source public APIs from GitHub with zero subscription fees.
-          </p>
+          <!-- Sub Tabs: Active Plugins vs Public-APIs Catalog -->
+          <div class="tab-bar" style="margin-bottom: 20px;">
+            <button class="tab-btn active" id="btn-tab-active-plugins" onclick="switchPluginTab('active')">
+              📦 My Active Plugins (<span id="tab-active-count">12</span>)
+            </button>
+            <button class="tab-btn" id="btn-tab-catalog-plugins" onclick="switchPluginTab('catalog')">
+              🌐 Browse Public APIs Store (<span id="tab-catalog-count">30+</span>)
+            </button>
+          </div>
 
-          <table class="plugins-table">
-            <thead>
-              <tr>
-                <th style="width: 40px;"><input type="checkbox" checked onchange="toggleSelectAllPlugins(this)"></th>
-                <th style="width: 260px;">Plugin / API Name</th>
-                <th>Description, Endpoint & Source</th>
-                <th style="text-align: right; width: 140px;">Launch & Code</th>
-              </tr>
-            </thead>
-            <tbody id="plugins-tbody"></tbody>
-          </table>
+          <!-- TAB 1: ACTIVE INSTALLED PLUGINS -->
+          <div id="plugin-tab-active">
+            <p style="font-size:13.5px; color:var(--wp-gray); margin-bottom:16px;">
+              Manage and launch active tools and API extensions installed on your home server cluster:
+            </p>
+
+            <table class="plugins-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox" checked onchange="toggleSelectAllPlugins(this)"></th>
+                  <th style="width: 260px;">Plugin / API Name</th>
+                  <th>Description, Endpoint & Source</th>
+                  <th style="text-align: right; width: 140px;">Launch & Code</th>
+                </tr>
+              </thead>
+              <tbody id="plugins-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- TAB 2: GITHUB PUBLIC-APIS STORE EXPLORER -->
+          <div id="plugin-tab-catalog" style="display: none;">
+            <div style="background:var(--wp-card-bg); border:1px solid var(--wp-border); border-radius:6px; padding:16px; margin-bottom:20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+                <div>
+                  <strong style="font-size:15px;">🌐 GitHub Public APIs Catalog</strong>
+                  <p style="font-size:12.5px; color:var(--wp-gray); margin-top:2px;">
+                    Curated from <a href="https://github.com/public-apis/public-apis" target="_blank" style="color:var(--wp-blue);">public-apis/public-apis</a> &mdash; 100% free open-source REST APIs ready to drop into tenant websites.
+                  </p>
+                </div>
+                <span class="wp-pill pill-green">Free Open Access</span>
+              </div>
+
+              <!-- Search & Filter Controls -->
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <input type="text" id="public-api-search" placeholder="🔍 Search free APIs (e.g. weather, crypto, ip, book, quotes)..." style="flex:2; min-width:240px; padding:8px 12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);" oninput="filterPublicApis()">
+                <select id="public-api-cat-filter" style="flex:1; min-width:160px; padding:8px 12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);" onchange="filterPublicApis()">
+                  <option value="All">All Categories (30+)</option>
+                  <option value="Development">Development & DevOps</option>
+                  <option value="Finance & Crypto">Finance & Crypto</option>
+                  <option value="Weather">Weather & Climate</option>
+                  <option value="Security & Geo">Security & Geolocation</option>
+                  <option value="AI & NLP">AI & NLP</option>
+                  <option value="Entertainment">Entertainment & Media</option>
+                  <option value="Open Data">Open Data & Food</option>
+                </select>
+                <label style="display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                  <input type="checkbox" id="public-api-no-auth" checked onchange="filterPublicApis()">
+                  <span>No Auth Required</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Dynamic Public APIs Grid -->
+            <div id="public-apis-cards-grid" class="wp-grid"></div>
+          </div>
         </div>
 
         <!-- ===================================================================
@@ -1195,6 +1246,7 @@
       renderInvoices();
       renderMongoCards();
       renderPlugins();
+      filterPublicApis();
       updateMetricCounts();
     }
 
@@ -2650,85 +2702,601 @@
       }
     };
 
-    /* --- INSTALL CUSTOM GIT API PLUGIN --- */
-    function openAddGitPluginModal() {
+    /* =========================================================================
+       PUBLIC-APIS/PUBLIC-APIS GITHUB CATALOG & EXPLORER
+       ========================================================================= */
+    const PUBLIC_APIS_CATALOG = [
+      // Development & DevOps
+      {
+        name: "GitHub REST API",
+        category: "Development",
+        desc: "Search public repositories, users, issues, commits, and release metrics.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.github.com/users/octocat",
+        sampleQuery: "https://api.github.com/users/octocat",
+        docs: "https://docs.github.com/rest"
+      },
+      {
+        name: "JSONPlaceholder",
+        category: "Development",
+        desc: "Fake online REST API for testing, mock blog posts, and AJAX prototyping.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://jsonplaceholder.typicode.com/posts/1",
+        sampleQuery: "https://jsonplaceholder.typicode.com/posts/1",
+        docs: "https://jsonplaceholder.typicode.com/"
+      },
+      {
+        name: "ReqRes User Simulation",
+        category: "Development",
+        desc: "Simulated real-world user CRUD endpoints with pagination & avatars.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://reqres.in/api/users?page=1",
+        sampleQuery: "https://reqres.in/api/users?page=1",
+        docs: "https://reqres.in/"
+      },
+      {
+        name: "HTTPBin HTTP Testing",
+        category: "Development",
+        desc: "HTTP request & response testing service for headers, IP, UUID, and methods.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://httpbin.org/get",
+        sampleQuery: "https://httpbin.org/get",
+        docs: "https://httpbin.org/"
+      },
+      {
+        name: "IPify Public IP Address",
+        category: "Development",
+        desc: "Lightweight and high-reliability client public IP address API.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.ipify.org?format=json",
+        sampleQuery: "https://api.ipify.org?format=json",
+        docs: "https://www.ipify.org/"
+      },
+      {
+        name: "CDNjs Open Libraries",
+        category: "Development",
+        desc: "Search over 4,000+ open-source JavaScript and CSS front-end libraries.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.cdnjs.com/libraries?search=react",
+        sampleQuery: "https://api.cdnjs.com/libraries?search=react",
+        docs: "https://cdnjs.com/api"
+      },
+
+      // Finance & Cryptocurrency
+      {
+        name: "CoinGecko Crypto Ticker",
+        category: "Finance & Crypto",
+        desc: "Live price, volume, and market stats for Bitcoin, Ethereum, and 10,000+ tokens.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,inr,eur",
+        sampleQuery: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,inr,eur",
+        docs: "https://www.coingecko.com/api"
+      },
+      {
+        name: "Binance Public Spot Price",
+        category: "Finance & Crypto",
+        desc: "Real-time ticker prices direct from Binance global spot market order books.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+        sampleQuery: "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+        docs: "https://binance-docs.github.io/apidocs/spot/en/"
+      },
+      {
+        name: "Frankfurter ECB Exchange",
+        category: "Finance & Crypto",
+        desc: "Open source foreign exchange rates published daily by the European Central Bank.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.frankfurter.app/latest?from=USD",
+        sampleQuery: "https://api.frankfurter.app/latest?from=USD",
+        docs: "https://www.frankfurter.app/docs/"
+      },
+      {
+        name: "Open Exchange Rates (ER-API)",
+        category: "Finance & Crypto",
+        desc: "Free real-time currency conversion rates covering 160+ world currencies.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://open.er-api.com/v6/latest/USD",
+        sampleQuery: "https://open.er-api.com/v6/latest/USD",
+        docs: "https://www.exchangerate-api.com/"
+      },
+      {
+        name: "CoinCap Crypto Assets",
+        category: "Finance & Crypto",
+        desc: "Real-time cryptocurrency asset tracking, market capitalization, and supply.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.coincap.io/v2/assets/bitcoin",
+        sampleQuery: "https://api.coincap.io/v2/assets/bitcoin",
+        docs: "https://docs.coincap.io/"
+      },
+
+      // Weather & Climate
+      {
+        name: "Open-Meteo Weather Forecast",
+        category: "Weather",
+        desc: "100% free open-source weather forecast API without any API keys required.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.open-meteo.com/v1/forecast?latitude=19.076&longitude=72.877&current_weather=true",
+        sampleQuery: "https://api.open-meteo.com/v1/forecast?latitude=19.076&longitude=72.877&current_weather=true",
+        docs: "https://open-meteo.com/en/docs"
+      },
+      {
+        name: "7Timer! Weather & Astro",
+        category: "Weather",
+        desc: "Astronomical and meteorological global weather forecast based on NOAA GFS.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://www.7timer.info/bin/astro.php?lon=72.87&lat=19.07&ac=0&unit=metric&output=json",
+        sampleQuery: "https://www.7timer.info/bin/astro.php?lon=72.87&lat=19.07&ac=0&unit=metric&output=json",
+        docs: "http://www.7timer.info/"
+      },
+
+      // Security, Geolocation & Validation
+      {
+        name: "FreeIP Geolocation Intelligence",
+        category: "Security & Geo",
+        desc: "Fast IP address geolocation, country, city, ASN, coordinates, and timezone.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://freeipapi.com/api/json/",
+        sampleQuery: "https://freeipapi.com/api/json/",
+        docs: "https://freeipapi.com/"
+      },
+      {
+        name: "Cloudflare 1.1.1.1 DNS DoH",
+        category: "Security & Geo",
+        desc: "DNS over HTTPS query API to resolve DNS records (A, AAAA, MX, TXT) and verify SSL.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://cloudflare-dns.com/dns-query?name=github.com&type=A",
+        sampleQuery: "https://cloudflare-dns.com/dns-query?name=github.com&type=A",
+        docs: "https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/"
+      },
+      {
+        name: "QRServer Dynamic Generator",
+        category: "Security & Geo",
+        desc: "Generate high-resolution custom QR codes for web URLs, Wi-Fi keys, and vCards.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=HomeServer",
+        sampleQuery: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=HomeServer",
+        docs: "https://goqr.me/api/"
+      },
+      {
+        name: "Zippopotam Postal Code",
+        category: "Security & Geo",
+        desc: "Postal code, zip code, city, and state geographic search covering 60+ countries.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.zippopotam.us/us/90210",
+        sampleQuery: "https://api.zippopotam.us/us/90210",
+        docs: "https://www.zippopotam.us/"
+      },
+
+      // AI, NLP & Utility
+      {
+        name: "DummyJSON Quotes & NLP",
+        category: "AI & NLP",
+        desc: "Random inspirational quotes, author tags, and text processing payloads.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://dummyjson.com/quotes/random",
+        sampleQuery: "https://dummyjson.com/quotes/random",
+        docs: "https://dummyjson.com/docs/quotes"
+      },
+      {
+        name: "Agify Age Predictor",
+        category: "AI & NLP",
+        desc: "Predicts the probable age of a person based on their given first name.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.agify.io?name=alex",
+        sampleQuery: "https://api.agify.io?name=alex",
+        docs: "https://agify.io/"
+      },
+      {
+        name: "Genderize Gender Predictor",
+        category: "AI & NLP",
+        desc: "Predicts the probable gender of a person based on their first name.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.genderize.io?name=sanchit",
+        sampleQuery: "https://api.genderize.io?name=sanchit",
+        docs: "https://genderize.io/"
+      },
+      {
+        name: "Nationalize Predictor",
+        category: "AI & NLP",
+        desc: "Predicts the nationality of a person based on their surname or name.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.nationalize.io?name=kumar",
+        sampleQuery: "https://api.nationalize.io?name=kumar",
+        docs: "https://nationalize.io/"
+      },
+      {
+        name: "Bored Activity Finder",
+        category: "AI & NLP",
+        desc: "Find random interesting things to do with category, type, and price level filters.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://bored-api.appbrewery.com/random",
+        sampleQuery: "https://bored-api.appbrewery.com/random",
+        docs: "https://boredapi.com/"
+      },
+      {
+        name: "Advice Slip API",
+        category: "AI & NLP",
+        desc: "Generate random pieces of practical advice and wisdom for web apps.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.adviceslip.com/advice",
+        sampleQuery: "https://api.adviceslip.com/advice",
+        docs: "https://api.adviceslip.com/"
+      },
+
+      // Entertainment & Media
+      {
+        name: "PokéAPI Pokémon Database",
+        category: "Entertainment",
+        desc: "The comprehensive RESTful Pokémon game API containing data on all Pokémon.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://pokeapi.co/api/v2/pokemon/charizard",
+        sampleQuery: "https://pokeapi.co/api/v2/pokemon/charizard",
+        docs: "https://pokeapi.co/"
+      },
+      {
+        name: "Rick and Morty Database",
+        category: "Entertainment",
+        desc: "Access characters, episodes, and locations from Rick and Morty universe.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://rickandmortyapi.com/api/character/1",
+        sampleQuery: "https://rickandmortyapi.com/api/character/1",
+        docs: "https://rickandmortyapi.com/"
+      },
+      {
+        name: "TVMaze Shows & Schedule",
+        category: "Entertainment",
+        desc: "Search TV show schedules, episode guides, cast information, and posters.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://api.tvmaze.com/search/shows?q=matrix",
+        sampleQuery: "https://api.tvmaze.com/search/shows?q=matrix",
+        docs: "https://www.tvmaze.com/api"
+      },
+      {
+        name: "Open Library Books Search",
+        category: "Entertainment",
+        desc: "Search millions of books, authors, subjects, and ISBNs from the Internet Archive.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://openlibrary.org/search.json?q=javascript&limit=3",
+        sampleQuery: "https://openlibrary.org/search.json?q=javascript&limit=3",
+        docs: "https://openlibrary.org/developers/api"
+      },
+      {
+        name: "Dog CEO Random Dogs",
+        category: "Entertainment",
+        desc: "Open source dog image API with breed lists, sub-breeds, and HD pictures.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://dog.ceo/api/breeds/image/random",
+        sampleQuery: "https://dog.ceo/api/breeds/image/random",
+        docs: "https://dog.ceo/dog-api/"
+      },
+      {
+        name: "Cat Facts Ninja",
+        category: "Entertainment",
+        desc: "Daily interesting facts and trivia about cats in lightweight JSON format.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://catfact.ninja/fact",
+        sampleQuery: "https://catfact.ninja/fact",
+        docs: "https://catfact.ninja/"
+      },
+
+      // Open Data & Food
+      {
+        name: "REST Countries V3",
+        category: "Open Data",
+        desc: "Information about worldwide countries: capital, currency, flags, borders, languages.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://restcountries.com/v3.1/name/india",
+        sampleQuery: "https://restcountries.com/v3.1/name/india",
+        docs: "https://restcountries.com/"
+      },
+      {
+        name: "Open Food Facts Barcode",
+        category: "Open Data",
+        desc: "Open collaborative database of food products with ingredients and nutrition.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://world.openfoodfacts.org/api/v0/product/737628064500.json",
+        sampleQuery: "https://world.openfoodfacts.org/api/v0/product/737628064500.json",
+        docs: "https://world.openfoodfacts.org/data"
+      },
+      {
+        name: "RandomUser Synthetic Profiles",
+        category: "Open Data",
+        desc: "Generate random realistic user accounts with names, addresses, emails, and avatars.",
+        auth: "No Auth",
+        https: true,
+        cors: "Yes",
+        endpoint: "https://randomuser.me/api/?results=1",
+        sampleQuery: "https://randomuser.me/api/?results=1",
+        docs: "https://randomuser.me/"
+      }
+    ];
+
+    function switchPluginTab(tab) {
+      const btnActive = document.getElementById("btn-tab-active-plugins");
+      const btnCatalog = document.getElementById("btn-tab-catalog-plugins");
+      const tabActive = document.getElementById("plugin-tab-active");
+      const tabCatalog = document.getElementById("plugin-tab-catalog");
+
+      if (tab === 'catalog') {
+        btnActive.classList.remove("active");
+        btnCatalog.classList.add("active");
+        tabActive.style.display = "none";
+        tabCatalog.style.display = "block";
+        filterPublicApis();
+      } else {
+        btnCatalog.classList.remove("active");
+        btnActive.classList.add("active");
+        tabCatalog.style.display = "none";
+        tabActive.style.display = "block";
+      }
+    }
+
+    function filterPublicApis() {
+      const q = (document.getElementById("public-api-search")?.value || "").toLowerCase().trim();
+      const cat = document.getElementById("public-api-cat-filter")?.value || "All";
+      const noAuthOnly = document.getElementById("public-api-no-auth")?.checked;
+
+      const filtered = PUBLIC_APIS_CATALOG.filter(api => {
+        const matchesQuery = !q || api.name.toLowerCase().includes(q) || api.desc.toLowerCase().includes(q) || api.category.toLowerCase().includes(q);
+        const matchesCat = (cat === "All") || (api.category === cat);
+        const matchesAuth = !noAuthOnly || (api.auth === "No Auth");
+        return matchesQuery && matchesCat && matchesAuth;
+      });
+
+      renderPublicApis(filtered);
+    }
+
+    function renderPublicApis(list) {
+      const grid = document.getElementById("public-apis-cards-grid");
+      if (!grid) return;
+
+      const countEl = document.getElementById("tab-catalog-count");
+      if (countEl) countEl.innerText = PUBLIC_APIS_CATALOG.length;
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--wp-gray);">
+            No public APIs found matching your search. Try changing the keyword or category filter.
+          </div>
+        `;
+        return;
+      }
+
+      let html = "";
+      list.forEach(api => {
+        const isInstalled = PLUGINS.some(p => p.name === api.name);
+
+        html += `
+          <div class="wp-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div class="card-title">
+                <strong>${api.name}</strong>
+                <span class="wp-pill pill-blue" style="font-size:10px;">${api.category}</span>
+              </div>
+              <p style="font-size:12.5px; color:var(--wp-text); margin-bottom:8px; line-height:1.5;">${api.desc}</p>
+              <div style="font-size:11px; color:var(--wp-gray); font-family:monospace; word-break:break-all; background:var(--wp-admin-bg); padding:6px 8px; border-radius:4px; margin-bottom:12px;">
+                ${api.sampleQuery}
+              </div>
+              <div style="display:flex; gap:6px; margin-bottom:12px; font-size:11px;">
+                <span class="wp-pill pill-green">● ${api.auth}</span>
+                <span class="wp-pill pill-purple">HTTPS: Yes</span>
+                <span class="wp-pill pill-orange">CORS: ${api.cors}</span>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+              <button class="button button-sm button-primary" style="flex:1;" onclick="openPublicApiPlayground('${encodeURIComponent(api.name)}')">▶️ Test API</button>
+              <button class="button button-sm ${isInstalled ? 'button-success' : ''}" onclick="installPublicApiAsPlugin('${encodeURIComponent(api.name)}')">${isInstalled ? '✓ Added' : '⚡ Install'}</button>
+              <button class="button button-sm" onclick="copyPublicApiSnippet('${encodeURIComponent(api.name)}')">📋 Code</button>
+            </div>
+          </div>
+        `;
+      });
+
+      grid.innerHTML = html;
+    }
+
+    function openPublicApiPlayground(encodedName) {
+      const name = decodeURIComponent(encodedName);
+      const api = PUBLIC_APIS_CATALOG.find(a => a.name === name);
+      if (!api) return;
+
       let html = `
         <div style="font-size:13px; line-height:1.6;">
-          <p style="margin-bottom:12px;">Add any free public API repository or REST API endpoint as a permanent plugin in your cPanel:</p>
-          <div class="form-group">
-            <label>Plugin / API Name</label>
-            <input id="new-git-plugin-name" type="text" placeholder="e.g. Dog Ceo Free Dog API" value="Custom Open API Plugin">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+              <span class="wp-pill pill-blue">${api.category}</span>
+              <span class="wp-pill pill-green">${api.auth}</span>
+            </div>
+            <a href="${api.docs}" target="_blank" style="font-size:12px; color:var(--wp-blue);">Official API Docs &rarr;</a>
           </div>
-          <div class="form-group">
-            <label>GitHub Repo or API Base URL</label>
-            <input id="new-git-plugin-url" type="text" placeholder="https://api.example.com/v1/..." value="https://dog.ceo/api/breeds/image/random">
+
+          <p style="color:var(--wp-gray); margin-bottom:12px;">${api.desc}</p>
+
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Endpoint URL / Query:</label>
+          <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <input type="text" id="play-endpoint-input" value="${api.sampleQuery}" style="flex:1; padding:8px 12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text); font-family:monospace; font-size:12px;">
+            <button class="button button-primary" onclick="runPublicApiLiveTest()">⚡ Fetch Live</button>
           </div>
-          <div class="form-group">
-            <label>Category</label>
-            <select id="new-git-plugin-cat">
-              <option value="Free APIs">Free Public APIs</option>
-              <option value="Commercial Tools">Commercial Tools</option>
-              <option value="DevOps">DevOps & Cloud</option>
-              <option value="AI & Content">AI & Content</option>
-            </select>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:600;">Response Output (Live JSON):</span>
+            <span id="play-latency-badge" style="font-size:12px; color:var(--wp-gray);">Latency: --</span>
           </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea id="new-git-plugin-desc" style="height:70px;">Free REST endpoint integrated into Home Server cPanel.</textarea>
-          </div>
+
+          <pre id="play-response-box" style="background:#090d16; color:#4ade80; padding:14px; border-radius:6px; font-size:12px; font-family:monospace; max-height:240px; overflow-y:auto;">Click 'Fetch Live' to execute query against public API...</pre>
         </div>
       `;
-      openModal("➕ Install Free Git API Plugin", html, `
-        <button class="button" onclick="closeModal()">Cancel</button>
-        <button class="button button-success" onclick="saveNewGitPlugin()">💾 Install Plugin</button>
-      `);
+
+      openModal("🌐 Public API Playground: " + api.name, html, `
+        <button class="button button-sm" onclick="copyPublicApiSnippet('${encodeURIComponent(api.name)}')">📋 Copy Integration Code</button>
+        <button class="button button-sm button-success" onclick="installPublicApiAsPlugin('${encodeURIComponent(api.name)}')">⚡ Install as Plugin</button>
+        <button class="button button-sm" onclick="closeModal()">Close</button>
+      `, true);
+
+      setTimeout(runPublicApiLiveTest, 100);
     }
 
-    function saveNewGitPlugin() {
-      const name = document.getElementById("new-git-plugin-name").value.trim();
-      const url = document.getElementById("new-git-plugin-url").value.trim();
-      const cat = document.getElementById("new-git-plugin-cat").value;
-      const desc = document.getElementById("new-git-plugin-desc").value.trim();
+    window.runPublicApiLiveTest = async function() {
+      const input = document.getElementById("play-endpoint-input");
+      const box = document.getElementById("play-response-box");
+      const latBadge = document.getElementById("play-latency-badge");
+      if (!input || !box) return;
 
-      if (!name || !url) { alert("Please provide a name and endpoint URL."); return; }
+      const url = input.value.trim();
+      box.innerText = "Querying live public API endpoint...";
+      latBadge.innerText = "Connecting...";
 
-      const newP = {
-        id: "git_plugin_" + Date.now(),
-        name: name,
-        category: cat,
-        version: "1.0.0",
-        author: "GitHub Community",
-        active: true,
-        endpoint: url,
-        desc: desc,
-        run: function() {
-          openModal("🔌 " + name, `
-            <div style="font-size:13px;">
-              <p>Target Endpoint: <code>${url}</code></p>
-              <button class="button button-primary" style="margin:12px 0;" onclick="testCustomApiLive('${url}')">▶️ Test Live Endpoint</button>
-              <pre id="custom-api-res" style="background:#090d16; color:#4ade80; padding:12px; border-radius:4px; font-size:12px; font-family:monospace; max-height:200px; overflow-y:auto;">Click Test Live Endpoint...</pre>
-            </div>
-          `);
-        }
-      };
-
-      PLUGINS.unshift(newP);
-      renderPlugins();
-      closeModal();
-      alert("Plugin '" + name + "' installed successfully!");
-    }
-
-    window.testCustomApiLive = async function(url) {
-      const box = document.getElementById("custom-api-res");
-      box.innerText = "Querying " + url + "...";
+      const start = performance.now();
       try {
         const res = await fetch(url);
+        const diff = Math.round(performance.now() - start);
+        latBadge.innerHTML = `<span style="color:#008a20; font-weight:bold;">● ${res.status} OK (${diff}ms)</span>`;
         const data = await res.json();
         box.innerText = JSON.stringify(data, null, 2);
       } catch(e) {
-        box.innerText = "Error: " + e.message;
+        const diff = Math.round(performance.now() - start);
+        latBadge.innerHTML = `<span style="color:#d63638; font-weight:bold;">● Error (${diff}ms)</span>`;
+        box.innerText = "Fetch note: Cross-Origin CORS or network error: " + e.message + "\n\nTip: When calling from server backend (Node.js/Python), CORS restrictions do not apply.";
       }
     };
+
+    function installPublicApiAsPlugin(encodedName) {
+      const name = decodeURIComponent(encodedName);
+      const api = PUBLIC_APIS_CATALOG.find(a => a.name === name);
+      if (!api) return;
+
+      if (PLUGINS.some(p => p.name === api.name)) {
+        alert(`Plugin '${api.name}' is already installed and active!`);
+        return;
+      }
+
+      const newPlugin = {
+        id: "public_api_" + Date.now(),
+        name: api.name,
+        category: api.category,
+        version: "1.0.0",
+        author: "public-apis (" + api.auth + ")",
+        active: true,
+        endpoint: api.sampleQuery,
+        desc: api.desc,
+        run: function() {
+          openPublicApiPlayground(encodeURIComponent(api.name));
+        }
+      };
+
+      PLUGINS.unshift(newPlugin);
+      renderPlugins();
+      filterPublicApis();
+      alert(`🎉 SUCCESS!\n'${api.name}' has been installed to your Active Plugins list!`);
+    }
+
+    function copyPublicApiSnippet(encodedName) {
+      const name = decodeURIComponent(encodedName);
+      const api = PUBLIC_APIS_CATALOG.find(a => a.name === name);
+      if (!api) return;
+
+      const jsCode = `// Fetch data from ${api.name} (Source: public-apis/public-apis)
+fetch('${api.sampleQuery}')
+  .then(response => response.json())
+  .then(data => {
+    console.log("${api.name} Data:", data);
+  })
+  .catch(err => console.error("Error:", err));`;
+
+      const pyCode = `# Python 3 (Requests)
+import requests
+response = requests.get("${api.sampleQuery}")
+data = response.json()
+print("${api.name}:", data)`;
+
+      let html = `
+        <div style="font-size:13px; line-height:1.6;">
+          <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchModalTab(this, 'tab-code-js')">JavaScript (Fetch)</button>
+            <button class="tab-btn" onclick="switchModalTab(this, 'tab-code-py')">Python (Requests)</button>
+            <button class="tab-btn" onclick="switchModalTab(this, 'tab-code-curl')">cURL Command</button>
+          </div>
+
+          <div id="tab-code-js" class="modal-tab-content">
+            <pre style="background:#090d16; color:#4ade80; padding:12px; border-radius:4px; font-size:12px; font-family:monospace; overflow-x:auto;">${jsCode}</pre>
+          </div>
+          <div id="tab-code-py" class="modal-tab-content" style="display:none;">
+            <pre style="background:#090d16; color:#38bdf8; padding:12px; border-radius:4px; font-size:12px; font-family:monospace; overflow-x:auto;">${pyCode}</pre>
+          </div>
+          <div id="tab-code-curl" class="modal-tab-content" style="display:none;">
+            <pre style="background:#090d16; color:#facc15; padding:12px; border-radius:4px; font-size:12px; font-family:monospace; overflow-x:auto;">curl -s "${api.sampleQuery}"</pre>
+          </div>
+        </div>
+      `;
+
+      openModal("📋 Integration Code: " + api.name, html, `
+        <button class="button button-primary" onclick="navigator.clipboard.writeText(\`${jsCode}\`).then(()=>alert('JavaScript code copied to clipboard!'))">📋 Copy JS Code</button>
+        <button class="button" onclick="closeModal()">Close</button>
+      `);
+    }
 
     /* =========================================================================
        VIEW NAVIGATION & MODAL CONTROLS
