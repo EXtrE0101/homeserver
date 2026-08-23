@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-#  Configure & Launch PiCodeHub on Website 2 (/site2/ & Port 8002)
+#  Configure & Launch Shodh Labs on Website 2 (/site2/ & Port 8002)
 # ==============================================================================
 set -e
 
@@ -8,10 +8,10 @@ echo "🔧 [1/4] Setting folder permissions for Site 2..."
 sudo chown -R pi:pi /var/www/site2
 
 # Determine exact directory
-if [ -d "/var/www/site2/PICODEHUB-main" ]; then
-    PCH_DIR="/var/www/site2/PICODEHUB-main"
-elif [ -d "/var/www/site2/PICODEHUB" ]; then
-    PCH_DIR="/var/www/site2/PICODEHUB"
+if [ -d "/var/www/site2/SHODH_LABS-main" ]; then
+    PCH_DIR="/var/www/site2/SHODH_LABS-main"
+elif [ -d "/var/www/site2/SHODH_LABS" ]; then
+    PCH_DIR="/var/www/site2/SHODH_LABS"
 elif [ -f "/var/www/site2/app.py" ]; then
     PCH_DIR="/var/www/site2"
 else
@@ -25,7 +25,7 @@ if [ -z "$PCH_DIR" ] || [ ! -f "$PCH_DIR/app.py" ]; then
     exit 1
 fi
 
-echo "📂 PiCodeHub located at: $PCH_DIR"
+echo "📂 Shodh Labs located at: $PCH_DIR"
 cd "$PCH_DIR"
 
 echo "🐍 [2/4] Setting up Python Virtual Environment..."
@@ -40,19 +40,19 @@ cat << 'START_EOF' > start.sh
 #!/bin/bash
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
-export PICODEHUB_PASSWORD="Sanchit@123"
-export PICODEHUB_SECRET_KEY="PiCodeHub_SecretKey_Site2_Secured_2026"
-export PICODEHUB_HOST="127.0.0.1"
-export PICODEHUB_HTTPS_ONLY="true"
-export PICODEHUB_TRUST_PROXY="true"
+export SHODH_LABS_PASSWORD="Sanchit@123"
+export SHODH_LABS_SECRET_KEY="Shodh Labs_SecretKey_Site2_Secured_2026"
+export SHODH_LABS_HOST="127.0.0.1"
+export SHODH_LABS_HTTPS_ONLY="true"
+export SHODH_LABS_TRUST_PROXY="true"
 exec "$DIR/venv/bin/gunicorn" -w 4 -b 127.0.0.1:5000 --timeout 120 app:app
 START_EOF
 
 chmod +x start.sh
 
 # Start or restart under PM2
-pm2 delete picodehub 2>/dev/null || true
-pm2 start ./start.sh --name "picodehub"
+pm2 delete shodhlabs 2>/dev/null || true
+pm2 start ./start.sh --name "shodhlabs"
 pm2 save
 
 echo "🔧 [4/4] Configuring Nginx Reverse Proxy for Site 2 (Port 8002 & /site2/)..."
@@ -89,9 +89,9 @@ fi
 sudo nginx -t && sudo systemctl reload nginx
 
 echo "=============================================================================="
-echo "🎉 PiCodeHub is now LIVE on Website 2 (/site2/ & Port 8002)!"
+echo "🎉 Shodh Labs is now LIVE on Website 2 (/site2/ & Port 8002)!"
 echo "=============================================================================="
 echo "• Worldwide Link:     https://extre0101.github.io/homeserver/?go=site2"
 echo "• Local LAN Access:    http://homeserver.local/site2/ (or :8002)"
-echo "• PM2 Process:        pm2 status picodehub"
+echo "• PM2 Process:        pm2 status shodhlabs"
 echo "=============================================================================="

@@ -1,14 +1,14 @@
 #!/bin/bash
 # ==============================================================================
-#  Ubuntu Home Server - Deploy PiCodeHub Main to Website 1 (/site1/ & Port 8001)
+#  Ubuntu Home Server - Deploy Shodh Labs Main to Website 1 (/site1/ & Port 8001)
 # ==============================================================================
 set -e
 
 echo "=============================================================================="
-echo "🥧 DEPLOYING PICODEHUB-MAIN TO WEBSITE 1 (/site1/ & PORT 8001)"
+echo "🥧 DEPLOYING SHODH_LABS-MAIN TO WEBSITE 1 (/site1/ & PORT 8001)"
 echo "=============================================================================="
 
-SRC_DIR="/home/extre0101/picodehub-main/picodehub-main"
+SRC_DIR="/home/extre0101/shodhlabs-main/shodhlabs-main"
 DEST_DIR="/var/www/site1"
 
 if [ ! -d "$SRC_DIR" ]; then
@@ -24,7 +24,7 @@ if [ -d "$DEST_DIR" ] && [ "$(ls -A $DEST_DIR 2>/dev/null)" ]; then
     echo "✓ Previous Site 1 backed up."
 fi
 
-echo "📦 [2/5] Copying full PiCodeHub-Main files to $DEST_DIR (Shodh Labs Edition)..."
+echo "📦 [2/5] Copying full Shodh Labs-Main files to $DEST_DIR (Shodh Labs Edition)..."
 sudo cp -r "$SRC_DIR"/* "$DEST_DIR"/ 2>/dev/null || true
 sudo cp /home/extre0101/server/.env "$DEST_DIR"/.env 2>/dev/null || true
 sudo cp "$SRC_DIR"/.local* "$DEST_DIR"/ 2>/dev/null || true
@@ -60,13 +60,13 @@ cd "$DIR"
 # Shodh Labs Production Environment Variables
 export COMPANY_NAME="Shodh Labs"
 export APP_NAME="Shodh Labs Cloud Hub & IDE"
-export PICODEHUB_HOST="127.0.0.1"
-export PICODEHUB_PORT="5000"
-export PICODEHUB_HTTPS_ONLY="true"
-export PICODEHUB_TRUST_PROXY="true"
+export SHODH_LABS_HOST="127.0.0.1"
+export SHODH_LABS_PORT="5000"
+export SHODH_LABS_HTTPS_ONLY="true"
+export SHODH_LABS_TRUST_PROXY="true"
 export FLASK_ENV="production"
 export SECRET_KEY="shodh_labs_super_secure_master_token_2026"
-export PICODEHUB_SECRET_KEY="shodh_labs_picodehub_secret_key_2026_secured"
+export SHODH_LABS_SECRET_KEY="shodh_labs_shodhlabs_secret_key_2026_secured"
 export STORAGE_DIR="$DIR/user_workspace"
 export CUSTOM_FILES_DIR="$DIR/custom_uploads"
 export RESOURCE_FILES_DIR="$DIR/resource_uploads"
@@ -81,9 +81,9 @@ START_EOF
 chmod +x "$DEST_DIR/start.sh"
 
 if which pm2 >/dev/null 2>&1; then
-    pm2 delete picodehub-site1 2>/dev/null || true
-    pm2 delete picodehub 2>/dev/null || true
-    pm2 start "$DEST_DIR/start.sh" --name "picodehub-site1"
+    pm2 delete shodhlabs-site1 2>/dev/null || true
+    pm2 delete shodhlabs 2>/dev/null || true
+    pm2 start "$DEST_DIR/start.sh" --name "shodhlabs-site1"
     pm2 save 2>/dev/null || true
 fi
 
@@ -122,7 +122,7 @@ fi
 sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
 
 echo "=============================================================================="
-echo "🎉 PiCodeHub Main is now successfully deployed to Website 1!"
+echo "🎉 Shodh Labs Main is now successfully deployed to Website 1!"
 echo "=============================================================================="
 echo "• Worldwide Cloudflare URL: https://extre0101.github.io/homeserver/?go=site1"
 echo "• Local LAN Access:         http://homeserver.local/site1/ (or :8001)"

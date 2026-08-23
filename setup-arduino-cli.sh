@@ -5,7 +5,7 @@
 set -e
 
 echo "=============================================================================="
-echo "⚡ INSTALLING & CONFIGURING ARDUINO-CLI FOR SHODH LABS (PICODEHUB)"
+echo "⚡ INSTALLING & CONFIGURING ARDUINO-CLI FOR SHODH LABS (SHODH_LABS)"
 echo "=============================================================================="
 
 # 1. Download and install arduino-cli globally

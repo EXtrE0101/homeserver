@@ -1554,11 +1554,11 @@
     let sitesList = [
       {
         id: "site1",
-        name: "Website 1 (PiCodeHub Main Full IDE)",
+        name: "Website 1 (Shodh Labs Main Full IDE)",
         slug: "site1",
         port: 8001,
         path: "/var/www/site1",
-        template: "PiCodeHub Main (Flask + MongoDB)",
+        template: "Shodh Labs Main (Flask + MongoDB)",
         dbName: "site1_db",
         dbUser: "site1_user",
         owner: "admin",
@@ -1568,7 +1568,7 @@
       },
       {
         id: "site2",
-        name: "Website 2 (PiCodeHub + Auth & DB)",
+        name: "Website 2 (Shodh Labs + Auth & DB)",
         slug: "site2",
         port: 8002,
         path: "/var/www/site2",
@@ -3832,11 +3832,11 @@ print("${api.name}:", data)`;
     let activeFileSiteSlug = "site1";
     let fileSystemState = JSON.parse(localStorage.getItem("homeserver_files_state") || "null") || {
       "site1": [
-        { name: "app.py", type: "file", size: "98.5 KB", perms: "0644", mod: "2026-08-23 12:45", path: "/var/www/site1/app.py", content: `import os\nfrom flask import Flask, jsonify, render_template\nfrom dotenv import load_dotenv\nload_dotenv()\n\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return jsonify({\n        "organization": "Shodh Labs",\n        "service": "PiCodeHub Main Full IDE & Cloud Hub",\n        "status": "online",\n        "version": "2.4.0-prod"\n    })\n\n@app.route('/api/health')\ndef health():\n    return jsonify({\n        "status": "healthy",\n        "company": os.getenv("COMPANY_NAME", "Shodh Labs"),\n        "db": os.getenv("MONGODB_DB", "shodh_labs_db")\n    })\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=5000)` },
+        { name: "app.py", type: "file", size: "98.5 KB", perms: "0644", mod: "2026-08-23 12:45", path: "/var/www/site1/app.py", content: `import os\nfrom flask import Flask, jsonify, render_template\nfrom dotenv import load_dotenv\nload_dotenv()\n\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return jsonify({\n        "organization": "Shodh Labs",\n        "service": "Shodh Labs Main Full IDE & Cloud Hub",\n        "status": "online",\n        "version": "2.4.0-prod"\n    })\n\n@app.route('/api/health')\ndef health():\n    return jsonify({\n        "status": "healthy",\n        "company": os.getenv("COMPANY_NAME", "Shodh Labs"),\n        "db": os.getenv("MONGODB_DB", "shodh_labs_db")\n    })\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=5000)` },
         { name: "auth.py", type: "file", size: "41.2 KB", perms: "0644", mod: "2026-08-23 12:40", path: "/var/www/site1/auth.py", content: `# Shodh Labs Authentication & Multi-Tenant RBAC\nimport os\nimport secrets\nfrom dbshim import get_db\n\nCOMPANY_NAME = os.getenv("COMPANY_NAME", "Shodh Labs")\n` },
         { name: "dbshim.py", type: "file", size: "12.5 KB", perms: "0644", mod: "2026-08-23 12:35", path: "/var/www/site1/dbshim.py", content: `# Shodh Labs MongoDB & SQL Database Adapter Shim\nimport os\nfrom pymongo import MongoClient\n` },
         { name: "project_store.py", type: "file", size: "6.4 KB", perms: "0644", mod: "2026-08-23 12:30", path: "/var/www/site1/project_store.py", content: `# Shodh Labs Project Repository & Storage Engine\n` },
-        { name: ".env", type: "file", size: "520 B", perms: "0600", mod: "2026-08-23 12:50", path: "/var/www/site1/.env", content: `COMPANY_NAME=Shodh Labs\nAPP_NAME=Shodh Labs Cloud Hub & IDE\nMONGODB_URI=mongodb://127.0.0.1:27017/shodh_labs_db\nMONGODB_DB=shodh_labs_db\nSECRET_KEY=shodh_labs_super_secure_master_token_2026\nPICODEHUB_SECRET_KEY=shodh_labs_picodehub_secret_key_2026_secured\nPORT=5000\nFLASK_ENV=production\nSTORAGE_DIR=/var/www/site1/user_workspace` },
+        { name: ".env", type: "file", size: "520 B", perms: "0600", mod: "2026-08-23 12:50", path: "/var/www/site1/.env", content: `COMPANY_NAME=Shodh Labs\nAPP_NAME=Shodh Labs Cloud Hub & IDE\nMONGODB_URI=mongodb://127.0.0.1:27017/shodh_labs_db\nMONGODB_DB=shodh_labs_db\nSECRET_KEY=shodh_labs_super_secure_master_token_2026\nSHODH_LABS_SECRET_KEY=shodh_labs_shodhlabs_secret_key_2026_secured\nPORT=5000\nFLASK_ENV=production\nSTORAGE_DIR=/var/www/site1/user_workspace` },
         { name: "requirements.txt", type: "file", size: "90 B", perms: "0644", mod: "2026-08-23 12:00", path: "/var/www/site1/requirements.txt", content: `Flask>=2.2.0\npyserial>=3.5\npymongo>=4.6\nrequests>=2.31\npython-dotenv>=1.0\ngunicorn>=21.2` },
         { name: "user_workspace", type: "dir", size: "--", perms: "0775", mod: "2026-08-23 12:50", path: "/var/www/site1/user_workspace" },
         { name: "custom_uploads", type: "dir", size: "--", perms: "0775", mod: "2026-08-23 12:50", path: "/var/www/site1/custom_uploads" },

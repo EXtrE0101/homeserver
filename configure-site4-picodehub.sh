@@ -1,11 +1,11 @@
 #!/bin/bash
 # ==============================================================================
-#  Ubuntu Home Server - Configure & Deploy PiCodeHub on Website 4 (:8004 & /site4/)
+#  Ubuntu Home Server - Configure & Deploy Shodh Labs on Website 4 (:8004 & /site4/)
 # ==============================================================================
 set -e
 
 echo "=============================================================================="
-echo "🚀 DEPLOYING PICODEHUB TO WEBSITE 4 (/site4/ & PORT 8004)"
+echo "🚀 DEPLOYING SHODH_LABS TO WEBSITE 4 (/site4/ & PORT 8004)"
 echo "=============================================================================="
 
 SITE_DIR="/var/www/site4"
@@ -15,15 +15,15 @@ INTERNAL_PORT=5004
 sudo mkdir -p "$SITE_DIR"
 sudo chown -R pi:pi "$SITE_DIR" 2>/dev/null || sudo chown -R $USER:$USER "$SITE_DIR"
 
-# 1. Check for PiCodeHub source files
-if [ -d "$SITE_DIR/PICODEHUB-main" ]; then
-    PCH_DIR="$SITE_DIR/PICODEHUB-main"
-elif [ -d "$SITE_DIR/PICODEHUB" ]; then
-    PCH_DIR="$SITE_DIR/PICODEHUB"
+# 1. Check for Shodh Labs source files
+if [ -d "$SITE_DIR/SHODH_LABS-main" ]; then
+    PCH_DIR="$SITE_DIR/SHODH_LABS-main"
+elif [ -d "$SITE_DIR/SHODH_LABS" ]; then
+    PCH_DIR="$SITE_DIR/SHODH_LABS"
 elif [ -f "$SITE_DIR/app.py" ]; then
     PCH_DIR="$SITE_DIR"
 elif [ -f "/home/extre0101/server/site2-updated-bundle.tar.gz" ]; then
-    echo "📦 Extracting PiCodeHub bundle into $SITE_DIR..."
+    echo "📦 Extracting Shodh Labs bundle into $SITE_DIR..."
     tar -xzf /home/extre0101/server/site2-updated-bundle.tar.gz -C "$SITE_DIR" 2>/dev/null || true
     PCH_DIR=$(find "$SITE_DIR" -name "app.py" -exec dirname {} \; | head -n 1)
 else
@@ -31,7 +31,7 @@ else
 fi
 
 if [ -z "$PCH_DIR" ] || [ ! -f "$PCH_DIR/app.py" ]; then
-    echo "Creating production PiCodeHub entrypoint at $SITE_DIR/app.py..."
+    echo "Creating production Shodh Labs entrypoint at $SITE_DIR/app.py..."
     PCH_DIR="$SITE_DIR"
     cat << 'PY_EOF' > "$PCH_DIR/app.py"
 from flask import Flask, jsonify, render_template_string
@@ -44,7 +44,7 @@ HTML_PAGE = """
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PiCodeHub Main - Site 4</title>
+  <title>Shodh Labs Main - Site 4</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f3f4f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
     .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 40px; text-align: center; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
@@ -58,7 +58,7 @@ HTML_PAGE = """
 <body>
   <div class="card">
     <div style="font-size: 52px; margin-bottom: 12px;">🥧⚡</div>
-    <h1>PiCodeHub Main is Live!</h1>
+    <h1>Shodh Labs Main is Live!</h1>
     <p>Deployed on <strong>Website Slot 4</strong> (:8004 &bull; /site4/).<br>Powered by Python Flask, Gunicorn WSGI, &amp; Cloudflare Tunnel.</p>
     <div class="badge">● Multi-Tenant Worker &bull; Gunicorn Port 5004</div>
     <br>
@@ -74,7 +74,7 @@ def index():
 
 @app.route('/api/health')
 def health():
-    return jsonify({"status": "healthy", "service": "PiCodeHub Main", "slot": "site4", "port": 8004})
+    return jsonify({"status": "healthy", "service": "Shodh Labs Main", "slot": "site4", "port": 8004})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5004)
@@ -98,10 +98,10 @@ cat << START_EOF > "$PCH_DIR/start.sh"
 #!/bin/bash
 DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 cd "\$DIR"
-export PICODEHUB_HOST="127.0.0.1"
-export PICODEHUB_PORT="$INTERNAL_PORT"
-export PICODEHUB_HTTPS_ONLY="true"
-export PICODEHUB_TRUST_PROXY="true"
+export SHODH_LABS_HOST="127.0.0.1"
+export SHODH_LABS_PORT="$INTERNAL_PORT"
+export SHODH_LABS_HTTPS_ONLY="true"
+export SHODH_LABS_TRUST_PROXY="true"
 if [ -f "\$DIR/venv/bin/gunicorn" ]; then
     exec "\$DIR/venv/bin/gunicorn" -w 4 -b 127.0.0.1:$INTERNAL_PORT --timeout 120 app:app
 else
@@ -113,8 +113,8 @@ chmod +x "$PCH_DIR/start.sh"
 # 3. Process Supervisor
 echo "⚙️  [3/4] Registering under Process Supervisor..."
 if which pm2 >/dev/null 2>&1; then
-    pm2 delete picodehub-site4 2>/dev/null || true
-    pm2 start "$PCH_DIR/start.sh" --name "picodehub-site4"
+    pm2 delete shodhlabs-site4 2>/dev/null || true
+    pm2 start "$PCH_DIR/start.sh" --name "shodhlabs-site4"
     pm2 save 2>/dev/null || true
 fi
 
@@ -153,7 +153,7 @@ fi
 sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
 
 echo "=============================================================================="
-echo "🎉 PiCodeHub Main is deployed and active on Website 4!"
+echo "🎉 Shodh Labs Main is deployed and active on Website 4!"
 echo "=============================================================================="
 echo "• Local LAN Access:     http://homeserver.local/site4/ (or :8004)"
 echo "• Worldwide Cloudflare: https://extre0101.github.io/homeserver/?go=site4"

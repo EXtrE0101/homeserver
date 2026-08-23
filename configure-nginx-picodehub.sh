@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-#  Route PiCodeHub to Website 1 (/site1/ & Port 8001) in Nginx
+#  Route Shodh Labs to Website 1 (/site1/ & Port 8001) in Nginx
 # ==============================================================================
 set -e
 
@@ -46,7 +46,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 
 echo "=============================================================================="
-echo "🎉 PiCodeHub successfully routed to Website 1!"
+echo "🎉 Shodh Labs successfully routed to Website 1!"
 echo "• Local LAN Access:        http://homeserver.local/site1/ (or :8001)"
 echo "• Worldwide Cloudflare:    https://extre0101.github.io/homeserver/?go=site1"
 echo "=============================================================================="
