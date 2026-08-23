@@ -24,12 +24,20 @@ if [ -d "$DEST_DIR" ] && [ "$(ls -A $DEST_DIR 2>/dev/null)" ]; then
     echo "✓ Previous Site 1 backed up."
 fi
 
-echo "📦 [2/5] Copying full PiCodeHub-Main files to $DEST_DIR..."
+echo "📦 [2/5] Copying full PiCodeHub-Main files to $DEST_DIR (Shodh Labs Edition)..."
 sudo cp -r "$SRC_DIR"/* "$DEST_DIR"/ 2>/dev/null || true
-sudo cp "$SRC_DIR"/.env* "$DEST_DIR"/ 2>/dev/null || true
+sudo cp /home/extre0101/server/.env "$DEST_DIR"/.env 2>/dev/null || true
 sudo cp "$SRC_DIR"/.local* "$DEST_DIR"/ 2>/dev/null || true
 
+# Ensure all workspace and upload directories exist
+sudo mkdir -p "$DEST_DIR/user_workspace"
+sudo mkdir -p "$DEST_DIR/custom_uploads"
+sudo mkdir -p "$DEST_DIR/resource_uploads"
+sudo mkdir -p "$DEST_DIR/projects"
+sudo mkdir -p "$DEST_DIR/logs"
+
 sudo chown -R pi:pi "$DEST_DIR" 2>/dev/null || sudo chown -R $USER:$USER "$DEST_DIR"
+sudo chmod -R 775 "$DEST_DIR/user_workspace" "$DEST_DIR/custom_uploads" "$DEST_DIR/resource_uploads" "$DEST_DIR/projects" "$DEST_DIR/logs" 2>/dev/null || true
 
 cd "$DEST_DIR"
 
@@ -40,22 +48,32 @@ fi
 
 if [ -f "$DEST_DIR/venv/bin/pip" ]; then
     "$DEST_DIR/venv/bin/pip" install --upgrade pip >/dev/null 2>&1 || true
-    "$DEST_DIR/venv/bin/pip" install flask gunicorn pyserial pymongo requests python-dotenv >/dev/null 2>&1 || true
+    "$DEST_DIR/venv/bin/pip" install flask gunicorn pyserial pymongo requests python-dotenv werkzeug >/dev/null 2>&1 || true
 fi
 
-echo "🔐 [4/5] Creating startup script & daemon runner..."
+echo "🔐 [4/5] Creating startup script & daemon runner (Shodh Labs Cloud)..."
 cat << 'START_EOF' > "$DEST_DIR/start.sh"
 #!/bin/bash
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
+
+# Shodh Labs Production Environment Variables
+export COMPANY_NAME="Shodh Labs"
+export APP_NAME="Shodh Labs Cloud Hub & IDE"
 export PICODEHUB_HOST="127.0.0.1"
 export PICODEHUB_PORT="5000"
 export PICODEHUB_HTTPS_ONLY="true"
 export PICODEHUB_TRUST_PROXY="true"
 export FLASK_ENV="production"
+export SECRET_KEY="shodh_labs_super_secure_master_token_2026"
+export PICODEHUB_SECRET_KEY="shodh_labs_picodehub_secret_key_2026_secured"
+export STORAGE_DIR="$DIR/user_workspace"
+export CUSTOM_FILES_DIR="$DIR/custom_uploads"
+export RESOURCE_FILES_DIR="$DIR/resource_uploads"
+export PROJECTS_DIR="$DIR/projects"
 
 if [ -f "$DIR/venv/bin/gunicorn" ]; then
-    exec "$DIR/venv/bin/gunicorn" -w 4 -b 127.0.0.1:5000 --timeout 120 --access-logfile - --error-logfile - app:app
+    exec "$DIR/venv/bin/gunicorn" -w 4 -b 127.0.0.1:5000 --timeout 120 --access-logfile "$DIR/logs/access.log" --error-logfile "$DIR/logs/error.log" app:app
 else
     exec python3 app.py
 fi

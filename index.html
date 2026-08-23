@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Server Portal</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>">
+  <title>Shodh Labs — Multi-Tenant Cloud Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
   <style>
     :root {
       --bg: #09090b;
@@ -318,11 +318,11 @@
   <div class="container" id="view-connecting">
     <div class="spinner-wrapper">
       <div class="spinner"></div>
-      <div class="icon-center">🚀</div>
+      <div class="icon-center">🔬</div>
     </div>
-    <div class="status-badge status-connecting">⚡ Connecting to Home Server</div>
+    <div class="status-badge status-connecting">⚡ Connecting to Shodh Labs Server</div>
     <h1 id="conn-title">Connecting...</h1>
-    <p class="subtitle" id="conn-sub">Resolving live server connection from cloud gateway.</p>
+    <p class="subtitle" id="conn-sub">Resolving live Shodh Labs server connection from cloud gateway.</p>
   </div>
 
   <!-- VIEW 2: BEAUTIFUL MAINTENANCE / AUTO-RECONNECT (When Server is Down or Rebooting) -->
@@ -330,7 +330,7 @@
     <div style="font-size: 48px; margin-bottom: 16px;">🛠️</div>
     <div class="status-badge status-maintenance">🟡 Temporary Maintenance / Rebooting</div>
     <h1>System Maintenance</h1>
-    <p class="subtitle">Our server is currently rebooting or undergoing scheduled updates. Services will automatically reconnect shortly.</p>
+    <p class="subtitle">Shodh Labs server is currently rebooting or undergoing scheduled updates. Services will automatically reconnect shortly.</p>
 
     <div class="info-card">
       <strong>ℹ️ Automatic Reconnect:</strong><br>
@@ -346,36 +346,36 @@
 
     <div style="display:flex; flex-direction:column; gap:10px;">
       <button class="primary-btn" onclick="retryConnectionNow()">🔄 Check Connection Now</button>
-      <button class="secondary-btn" onclick="showAuthBox()">🔐 Administrator Login</button>
+      <button class="secondary-btn" onclick="showAuthBox()">🔐 Shodh Labs Admin Login</button>
     </div>
   </div>
 
   <!-- VIEW 3: MANUAL HUB DIRECTORY (?pause=1) -->
   <div class="container" id="view-directory" style="display:none;">
-    <div style="font-size: 42px; margin-bottom: 12px;">🌐</div>
-    <div class="status-badge status-online">🟢 Server Online & Ready</div>
-    <h1>Home Server Hub</h1>
+    <div style="font-size: 42px; margin-bottom: 12px;">🔬</div>
+    <div class="status-badge status-online">🟢 Shodh Labs Online &amp; Ready</div>
+    <h1>Shodh Labs Hub</h1>
     <p class="subtitle">Select a website or service to launch:</p>
 
     <div class="quick-links">
-      <a id="lnk-site1" class="sub-btn" href="#">🌐 Website 1</a>
+      <a id="lnk-site1" class="sub-btn" href="#">🌐 Website 1 (PiCodeHub)</a>
       <a id="lnk-site2" class="sub-btn" href="#">🌐 Website 2</a>
       <a id="lnk-site3" class="sub-btn" href="#">🌐 Website 3</a>
       <a id="lnk-site4" class="sub-btn" href="#">🌐 Website 4</a>
-      <a id="lnk-cpanel" class="sub-btn" href="cpanel.html">⚙️ WP cPanel</a>
+      <a id="lnk-cpanel" class="sub-btn" href="cpanel.html">⚙️ Shodh cPanel</a>
       <a id="lnk-terminal" class="sub-btn" href="#" onclick="routeToAdmin(event, 'terminal')">💻 Terminal</a>
     </div>
 
     <div style="margin-top: 24px; font-size: 12px; color: var(--muted);">
-      <a href="javascript:void(0)" onclick="showAuthBox()" style="color: #60a5fa; text-decoration: none;">Administrator Access &rarr;</a>
+      <a href="javascript:void(0)" onclick="showAuthBox()" style="color: #60a5fa; text-decoration: none;">Shodh Labs Administrator Access &rarr;</a>
     </div>
   </div>
 
   <!-- VIEW 4: ADMIN AUTH GATE (Only for Terminal / Panel / Admin Management) -->
   <div class="container" id="view-auth" style="display:none;">
     <div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
-    <h1>Admin Authentication</h1>
-    <p class="subtitle">Enter master password for administrative access</p>
+    <h1>Shodh Labs Authentication</h1>
+    <p class="subtitle">Enter master credentials for administrative cloud access</p>
 
     <!-- Inactivity Timeout Notice -->
     <div id="portal-session-expired-notice" style="display:none; background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:10px 12px; border-radius:8px; font-size:12.5px; margin-bottom:14px; text-align:left;">

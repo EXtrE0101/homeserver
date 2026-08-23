@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ubuntu Home Server &mdash; Commercial Multi-Tenant cPanel</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+  <title>Shodh Labs &mdash; Commercial Multi-Tenant cPanel</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
   <style>
     :root {
       --wp-admin-bg: #f0f0f1;
@@ -485,9 +485,9 @@
   <!-- LOGIN SCREEN -->
   <div id="login-wrap">
     <div class="login-box">
-      <div class="login-logo">🔒</div>
-      <h2 class="login-title">Ubuntu Home Server</h2>
-      <p class="login-subtitle">Commercial Multi-Tenant cPanel & Cloud Portal</p>
+      <div class="login-logo">🔬</div>
+      <h2 class="login-title">Shodh Labs</h2>
+      <p class="login-subtitle">Commercial Multi-Tenant cPanel &amp; Cloud Portal</p>
       
       <!-- Gov-Style Inactivity Timeout Notice -->
       <div id="session-timeout-notice" style="display:none; background:rgba(214, 54, 56, 0.12); border:1px solid #d63638; color:#d63638; border-radius:4px; padding:10px 12px; margin-bottom:16px; font-size:12.5px; text-align:left; line-height:1.4;">
@@ -511,7 +511,7 @@
           </label>
           <span style="color:var(--wp-gray);">TLS 1.3 / SSL Encrypted</span>
         </div>
-        <button type="submit" class="button button-primary" style="width: 100%; justify-content: center; padding: 10px;">🔐 Log In to Server cPanel</button>
+        <button type="submit" class="button button-primary" style="width: 100%; justify-content: center; padding: 10px;">🔐 Log In to Shodh Labs cPanel</button>
       </form>
     </div>
   </div>
@@ -521,7 +521,7 @@
     <!-- Top Admin Bar -->
     <div id="wpadminbar">
       <div class="adminbar-left">
-        <a class="adminbar-link" onclick="switchView('dashboard')"><strong>🏠 Home Server Hub</strong></a>
+        <a class="adminbar-link" onclick="switchView('dashboard')"><strong>🔬 Shodh Labs Hub</strong></a>
         <span class="live-status-pill">● LIVE TUNNEL</span>
         <span id="role-tag" class="role-badge">SuperAdmin</span>
       </div>
@@ -3760,11 +3760,18 @@ print("${api.name}:", data)`;
     let activeFileSiteSlug = "site1";
     let fileSystemState = JSON.parse(localStorage.getItem("homeserver_files_state") || "null") || {
       "site1": [
-        { name: "index.html", type: "file", size: "3.4 KB", perms: "0644", mod: "2026-08-23 12:15", path: "/var/www/site1/index.html", content: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Site 1 - Production Cloud Portal</title>\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f3f4f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }\n    .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 40px; text-align: center; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }\n    h1 { color: #38bdf8; margin-bottom: 8px; }\n    p { color: #9ca3af; font-size: 14px; line-height: 1.6; }\n    .pill { display: inline-block; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 16px; }\n  </style>\n</head>\n<body>\n  <div class="card">\n    <div style="font-size: 48px; margin-bottom: 12px;">🚀</div>\n    <h1>Site 1 is Live!</h1>\n    <p>Powered by Ubuntu Home Server &amp; Gunicorn WSGI.<br>Reverse Proxy: Nginx Port 80 &rarr; Internal Port 8001</p>\n    <div class="pill">● Production Microservice &bull; Port 8001</div>\n  </div>\n</body>\n</html>` },
-        { name: "app.py", type: "file", size: "1.8 KB", perms: "0644", mod: "2026-08-23 11:45", path: "/var/www/site1/app.py", content: `from flask import Flask, jsonify\nimport os\n\napp = Flask(__name__)\n\n@app.route('/')\ndef home():\n    return jsonify({"service": "Site 1 Production API", "status": "online", "port": 8001})\n\n@app.route('/api/health')\ndef health():\n    return jsonify({"status": "healthy", "service": "site1", "db": "site1_db"})\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=8001)` },
-        { name: ".env", type: "file", size: "280 B", perms: "0600", mod: "2026-08-23 10:20", path: "/var/www/site1/.env", content: `PORT=8001\nNODE_ENV=production\nMONGO_URI=mongodb://site1_user:Site1Pass@127.0.0.1:27017/site1_db\nMYSQL_URI=mysql://app_user:Pass@127.0.0.1:3306/app_production_db\nJWT_SECRET=super_secure_cpanel_token_2026` },
-        { name: "requirements.txt", type: "file", size: "140 B", perms: "0644", mod: "2026-08-22 09:00", path: "/var/www/site1/requirements.txt", content: `Flask==3.0.0\ngunicorn==21.2.0\npymongo==4.6.1\npython-dotenv==1.0.0` },
-        { name: "logs", type: "dir", size: "--", perms: "0700", mod: "2026-08-23 09:10", path: "/var/www/site1/logs" }
+        { name: "app.py", type: "file", size: "98.5 KB", perms: "0644", mod: "2026-08-23 12:45", path: "/var/www/site1/app.py", content: `import os\nfrom flask import Flask, jsonify, render_template\nfrom dotenv import load_dotenv\nload_dotenv()\n\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return jsonify({\n        "organization": "Shodh Labs",\n        "service": "PiCodeHub Main Full IDE & Cloud Hub",\n        "status": "online",\n        "version": "2.4.0-prod"\n    })\n\n@app.route('/api/health')\ndef health():\n    return jsonify({\n        "status": "healthy",\n        "company": os.getenv("COMPANY_NAME", "Shodh Labs"),\n        "db": os.getenv("MONGODB_DB", "shodh_labs_db")\n    })\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=5000)` },
+        { name: "auth.py", type: "file", size: "41.2 KB", perms: "0644", mod: "2026-08-23 12:40", path: "/var/www/site1/auth.py", content: `# Shodh Labs Authentication & Multi-Tenant RBAC\nimport os\nimport secrets\nfrom dbshim import get_db\n\nCOMPANY_NAME = os.getenv("COMPANY_NAME", "Shodh Labs")\n` },
+        { name: "dbshim.py", type: "file", size: "12.5 KB", perms: "0644", mod: "2026-08-23 12:35", path: "/var/www/site1/dbshim.py", content: `# Shodh Labs MongoDB & SQL Database Adapter Shim\nimport os\nfrom pymongo import MongoClient\n` },
+        { name: "project_store.py", type: "file", size: "6.4 KB", perms: "0644", mod: "2026-08-23 12:30", path: "/var/www/site1/project_store.py", content: `# Shodh Labs Project Repository & Storage Engine\n` },
+        { name: ".env", type: "file", size: "520 B", perms: "0600", mod: "2026-08-23 12:50", path: "/var/www/site1/.env", content: `COMPANY_NAME=Shodh Labs\nAPP_NAME=Shodh Labs Cloud Hub & IDE\nMONGODB_URI=mongodb://127.0.0.1:27017/shodh_labs_db\nMONGODB_DB=shodh_labs_db\nSECRET_KEY=shodh_labs_super_secure_master_token_2026\nPICODEHUB_SECRET_KEY=shodh_labs_picodehub_secret_key_2026_secured\nPORT=5000\nFLASK_ENV=production\nSTORAGE_DIR=/var/www/site1/user_workspace` },
+        { name: "requirements.txt", type: "file", size: "90 B", perms: "0644", mod: "2026-08-23 12:00", path: "/var/www/site1/requirements.txt", content: `Flask>=2.2.0\npyserial>=3.5\npymongo>=4.6\nrequests>=2.31\npython-dotenv>=1.0\ngunicorn>=21.2` },
+        { name: "user_workspace", type: "dir", size: "--", perms: "0775", mod: "2026-08-23 12:50", path: "/var/www/site1/user_workspace" },
+        { name: "custom_uploads", type: "dir", size: "--", perms: "0775", mod: "2026-08-23 12:50", path: "/var/www/site1/custom_uploads" },
+        { name: "projects", type: "dir", size: "--", perms: "0775", mod: "2026-08-23 12:50", path: "/var/www/site1/projects" },
+        { name: "templates", type: "dir", size: "--", perms: "0755", mod: "2026-08-23 12:00", path: "/var/www/site1/templates" },
+        { name: "static", type: "dir", size: "--", perms: "0755", mod: "2026-08-23 12:00", path: "/var/www/site1/static" },
+        { name: "logs", type: "dir", size: "--", perms: "0700", mod: "2026-08-23 12:50", path: "/var/www/site1/logs" }
       ],
       "site2": [
         { name: "index.html", type: "file", size: "4.2 KB", perms: "0644", mod: "2026-08-23 12:00", path: "/var/www/site2/index.html", content: `<!DOCTYPE html>\n<html>\n<head>\n  <title>Site 2 - Developer Portfolio &amp; CMS</title>\n  <style>body { font-family: sans-serif; background: #18181b; color: #fafafa; padding: 40px; text-align: center; }</style>\n</head>\n<body>\n  <h1>Apex Creative Design &bull; Site 2</h1>\n  <p>Standalone Node.js &amp; HTML5 Cluster.</p>\n</body>\n</html>` },
@@ -4005,25 +4012,25 @@ print("${api.name}:", data)`;
     }
 
     /* =========================================================================
-       9. MYSQL & MARIADB STUDIO ENGINE (REAL VALUES & SQL DUMPS)
+       9. MYSQL & MARIADB STUDIO ENGINE (SHODH LABS ENTERPRISE DATABASES)
        ========================================================================= */
     let sqlDbsList = JSON.parse(localStorage.getItem("homeserver_sql_dbs") || "null") || [
-      { name: "site1_production_db", user: "site1_sql_user", tables: 4, size: "12.4 MB", charset: "utf8mb4_unicode_ci" },
-      { name: "site2_ecommerce_db", user: "site2_sql_user", tables: 6, size: "24.1 MB", charset: "utf8mb4_unicode_ci" },
-      { name: "site3_agency_db", user: "site3_sql_user", tables: 3, size: "5.8 MB", charset: "utf8mb4_unicode_ci" }
+      { name: "shodh_production_db", user: "shodh_admin_user", tables: 4, size: "18.4 MB", charset: "utf8mb4_unicode_ci" },
+      { name: "shodh_iot_telemetry_db", user: "shodh_iot_user", tables: 6, size: "32.1 MB", charset: "utf8mb4_unicode_ci" },
+      { name: "shodh_ecommerce_db", user: "shodh_store_user", tables: 3, size: "8.6 MB", charset: "utf8mb4_unicode_ci" }
     ];
 
     let sqlTablesState = JSON.parse(localStorage.getItem("homeserver_sql_tables") || "null") || {
       "users": [
-        { id: 1, username: "admin", email: "admin@homeserver.local", role: "superadmin", created_at: "2026-08-20 10:00:00" },
-        { id: 2, username: "client_acme", email: "alex@acme.com", role: "client", created_at: "2026-08-21 14:22:10" },
-        { id: 3, username: "client_nexus", email: "billing@nexusdigital.io", role: "client", created_at: "2026-08-22 09:15:45" },
-        { id: 4, username: "client_demo", email: "demo@homeserver.local", role: "client", created_at: "2026-08-23 11:00:00" }
+        { id: 1, username: "admin", email: "admin@shodhlabs.com", role: "superadmin", org: "Shodh Labs Core", created_at: "2026-08-20 10:00:00" },
+        { id: 2, username: "research_lead", email: "lead@shodhlabs.com", role: "developer", org: "Shodh Labs R&D", created_at: "2026-08-21 14:22:10" },
+        { id: 3, username: "client_acme", email: "alex@acme.com", role: "client", org: "Acme Innovations", created_at: "2026-08-22 09:15:45" },
+        { id: 4, username: "client_nexus", email: "billing@nexusdigital.io", role: "client", org: "Nexus Agency", created_at: "2026-08-23 11:00:00" }
       ],
       "orders": [
-        { id: 101, client: "Acme Innovations", plan: "Business Agency", amount: "$79.00", status: "Paid", date: "2026-08-22" },
-        { id: 102, client: "Nexus Digital", plan: "Pro Developer", amount: "$29.00", status: "Paid", date: "2026-08-21" },
-        { id: 103, client: "Demo Starter", plan: "Starter", amount: "$9.00", status: "Paid", date: "2026-08-20" }
+        { id: 1001, client: "Acme Innovations", plan: "Shodh Business Agency", amount: "$79.00", status: "Paid", date: "2026-08-22" },
+        { id: 1002, client: "Nexus Digital", plan: "Shodh Pro Developer", amount: "$29.00", status: "Paid", date: "2026-08-21" },
+        { id: 1003, client: "Demo Starter", plan: "Shodh Starter Tier", amount: "$9.00", status: "Paid", date: "2026-08-20" }
       ]
     };
 
