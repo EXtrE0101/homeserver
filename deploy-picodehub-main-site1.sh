@@ -88,6 +88,7 @@ if which pm2 >/dev/null 2>&1; then
 fi
 
 echo "🌐 [5/5] Configuring Nginx Reverse Proxy for Site 1 (:8001 & /site1/)..."
+sudo mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled 2>/dev/null || true
 sudo bash -c 'cat << "SITE_EOF" > /etc/nginx/sites-available/site1
 server {
     listen 8001;
