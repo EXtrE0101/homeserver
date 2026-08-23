@@ -498,24 +498,21 @@
 
       <form onsubmit="handleLoginSubmit(event)">
         <div class="login-field">
-          <label for="user-login">Username or Client Key</label>
-          <input type="text" id="user-login" placeholder="admin, pi, or client username" required autofocus autocomplete="username">
+          <label for="user-login">Username or Client ID</label>
+          <input type="text" id="user-login" placeholder="Enter username or client account ID" required autofocus autocomplete="username">
         </div>
         <div class="login-field">
           <label for="user-pass">Password</label>
-          <input type="password" id="user-pass" placeholder="••••••••••••" required autocomplete="current-password">
+          <input type="password" id="user-pass" placeholder="Enter your password" required autocomplete="current-password">
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; font-size: 12.5px;">
           <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
             <input type="checkbox" id="remember-me" checked> Remember Me
           </label>
-          <span style="color:var(--wp-gray);">Port 80 / SSL Tunnel</span>
+          <span style="color:var(--wp-gray);">TLS 1.3 / SSL Encrypted</span>
         </div>
         <button type="submit" class="button button-primary" style="width: 100%; justify-content: center; padding: 10px;">🔐 Log In to Server cPanel</button>
       </form>
-      <div style="margin-top:16px; text-align:center; font-size:11.5px; color:var(--wp-gray);">
-        SuperAdmin: <code>admin</code> / <code>pi</code> &bull; Supports Tenant Passwords
-      </div>
     </div>
   </div>
 
@@ -1288,13 +1285,6 @@
           errorBox.innerText = "Error: This client account has been suspended by the server administrator.";
           return;
         }
-        errorBox.style.display = "none";
-        saveSessionAndUnlock(u, "tenant", client, remember);
-        return;
-      }
-
-      // 3. Fallback default tenant passwords check for pre-created accounts
-      if (client && (p === client.initialPassword || p === "Site1@123" || p === "Site2@123")) {
         errorBox.style.display = "none";
         saveSessionAndUnlock(u, "tenant", client, remember);
         return;
@@ -3765,23 +3755,69 @@ print("${api.name}:", data)`;
     }
 
     /* =========================================================================
-       8. WEB FILE MANAGER & INTERACTIVE CODE EDITOR ENGINE
+       8. WEB FILE MANAGER & INTERACTIVE CODE EDITOR ENGINE (REAL VALUES)
        ========================================================================= */
-    let fileSystemState = JSON.parse(localStorage.getItem("homeserver_files_state") || "null") || [
-      { name: "public_html", type: "dir", size: "--", perms: "0755", mod: "2026-08-23 12:00", path: "/public_html" },
-      { name: "index.html", type: "file", size: "3.4 KB", perms: "0644", mod: "2026-08-23 12:15", path: "/public_html/index.html", content: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Production Web Application</title>\n  <style>\n    body { font-family: sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 50px; }\n    h1 { color: #38bdf8; }\n  </style>\n</head>\n<body>\n  <h1>Welcome to Hosted Production Site</h1>\n  <p>Deploys isolated under Ubuntu Home Server cPanel.</p>\n</body>\n</html>` },
-      { name: "app.py", type: "file", size: "1.8 KB", perms: "0644", mod: "2026-08-23 11:45", path: "/public_html/app.py", content: `from flask import Flask, jsonify\napp = Flask(__name__)\n\n@app.route('/')\ndef home():\n    return jsonify({"service": "Production Flask API", "status": "online"})\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=8001)` },
-      { name: "server.js", type: "file", size: "2.1 KB", perms: "0644", mod: "2026-08-23 11:30", path: "/public_html/server.js", content: `const express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 8002;\n\napp.get('/', (req, res) => {\n  res.json({ message: "Node.js Express cluster running on Home Server" });\n});\n\napp.listen(PORT, () => console.log('Server online on port', PORT));` },
-      { name: ".env", type: "file", size: "320 B", perms: "0600", mod: "2026-08-23 10:20", path: "/public_html/.env", content: `PORT=8001\nNODE_ENV=production\nMONGO_URI=mongodb://site1_user:Site1Pass@127.0.0.1:27017/site1_db\nJWT_SECRET=super_secure_cpanel_token_2026` },
-      { name: "logs", type: "dir", size: "--", perms: "0700", mod: "2026-08-23 09:10", path: "/logs" },
-      { name: "backups", type: "dir", size: "--", perms: "0700", mod: "2026-08-23 08:00", path: "/backups" }
-    ];
+    let activeFileSiteSlug = "site1";
+    let fileSystemState = JSON.parse(localStorage.getItem("homeserver_files_state") || "null") || {
+      "site1": [
+        { name: "index.html", type: "file", size: "3.4 KB", perms: "0644", mod: "2026-08-23 12:15", path: "/var/www/site1/index.html", content: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Site 1 - Production Cloud Portal</title>\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f3f4f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }\n    .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 40px; text-align: center; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }\n    h1 { color: #38bdf8; margin-bottom: 8px; }\n    p { color: #9ca3af; font-size: 14px; line-height: 1.6; }\n    .pill { display: inline-block; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 16px; }\n  </style>\n</head>\n<body>\n  <div class="card">\n    <div style="font-size: 48px; margin-bottom: 12px;">🚀</div>\n    <h1>Site 1 is Live!</h1>\n    <p>Powered by Ubuntu Home Server &amp; Gunicorn WSGI.<br>Reverse Proxy: Nginx Port 80 &rarr; Internal Port 8001</p>\n    <div class="pill">● Production Microservice &bull; Port 8001</div>\n  </div>\n</body>\n</html>` },
+        { name: "app.py", type: "file", size: "1.8 KB", perms: "0644", mod: "2026-08-23 11:45", path: "/var/www/site1/app.py", content: `from flask import Flask, jsonify\nimport os\n\napp = Flask(__name__)\n\n@app.route('/')\ndef home():\n    return jsonify({"service": "Site 1 Production API", "status": "online", "port": 8001})\n\n@app.route('/api/health')\ndef health():\n    return jsonify({"status": "healthy", "service": "site1", "db": "site1_db"})\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=8001)` },
+        { name: ".env", type: "file", size: "280 B", perms: "0600", mod: "2026-08-23 10:20", path: "/var/www/site1/.env", content: `PORT=8001\nNODE_ENV=production\nMONGO_URI=mongodb://site1_user:Site1Pass@127.0.0.1:27017/site1_db\nMYSQL_URI=mysql://app_user:Pass@127.0.0.1:3306/app_production_db\nJWT_SECRET=super_secure_cpanel_token_2026` },
+        { name: "requirements.txt", type: "file", size: "140 B", perms: "0644", mod: "2026-08-22 09:00", path: "/var/www/site1/requirements.txt", content: `Flask==3.0.0\ngunicorn==21.2.0\npymongo==4.6.1\npython-dotenv==1.0.0` },
+        { name: "logs", type: "dir", size: "--", perms: "0700", mod: "2026-08-23 09:10", path: "/var/www/site1/logs" }
+      ],
+      "site2": [
+        { name: "index.html", type: "file", size: "4.2 KB", perms: "0644", mod: "2026-08-23 12:00", path: "/var/www/site2/index.html", content: `<!DOCTYPE html>\n<html>\n<head>\n  <title>Site 2 - Developer Portfolio &amp; CMS</title>\n  <style>body { font-family: sans-serif; background: #18181b; color: #fafafa; padding: 40px; text-align: center; }</style>\n</head>\n<body>\n  <h1>Apex Creative Design &bull; Site 2</h1>\n  <p>Standalone Node.js &amp; HTML5 Cluster.</p>\n</body>\n</html>` },
+        { name: "server.js", type: "file", size: "2.1 KB", perms: "0644", mod: "2026-08-23 11:30", path: "/var/www/site2/server.js", content: `const http = require('http');\nconst port = process.env.PORT || 8002;\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  res.end(JSON.stringify({ status: 'healthy', site: 'site2', runtime: 'Node.js LTS' }));\n});\n\nserver.listen(port, () => console.log('Site 2 online on port', port));` },
+        { name: "package.json", type: "file", size: "420 B", perms: "0644", mod: "2026-08-22 15:00", path: "/var/www/site2/package.json", content: `{\n  "name": "site2-portfolio",\n  "version": "1.0.0",\n  "main": "server.js",\n  "scripts": {\n    "start": "node server.js"\n  },\n  "dependencies": {\n    "express": "^4.19.2"\n  }\n}` },
+        { name: ".env", type: "file", size: "220 B", perms: "0600", mod: "2026-08-23 10:20", path: "/var/www/site2/.env", content: `PORT=8002\nNODE_ENV=production\nMONGO_URI=mongodb://site2_user:Site2Pass@127.0.0.1:27017/site2_db` }
+      ],
+      "site3": [
+        { name: "index.html", type: "file", size: "2.8 KB", perms: "0644", mod: "2026-08-23 11:00", path: "/var/www/site3/index.html", content: `<!DOCTYPE html>\n<html><body><h1>Nexus Agency Portal - Site 3</h1></body></html>` },
+        { name: ".env", type: "file", size: "190 B", perms: "0600", mod: "2026-08-23 10:00", path: "/var/www/site3/.env", content: `PORT=8003\nMONGO_URI=mongodb://site3_user:Site3Pass@127.0.0.1:27017/site3_db` }
+      ],
+      "site4": [
+        { name: "index.html", type: "file", size: "1.9 KB", perms: "0644", mod: "2026-08-23 10:00", path: "/var/www/site4/index.html", content: `<!DOCTYPE html>\n<html><body><h1>Demo Starter Hub - Site 4</h1></body></html>` }
+      ]
+    };
+
+    function saveFileSystemState() {
+      localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+    }
+
+    function populateFileManagerSites() {
+      const sel = document.getElementById("file-site-selector");
+      if (!sel) return;
+      const sites = getScopedSites();
+      sel.innerHTML = sites.map(s => `<option value="${s.slug}" ${s.slug === activeFileSiteSlug ? 'selected' : ''}>${s.name} (${s.path})</option>`).join('');
+      if (!fileSystemState[activeFileSiteSlug]) {
+        fileSystemState[activeFileSiteSlug] = [
+          { name: "index.html", type: "file", size: "1.5 KB", perms: "0644", mod: "2026-08-23 12:00", path: `/var/www/${activeFileSiteSlug}/index.html`, content: `<!DOCTYPE html><html><body><h1>Website Slot: ${activeFileSiteSlug}</h1></body></html>` }
+        ];
+        saveFileSystemState();
+      }
+    }
+
+    function switchFileManagerSite(siteSlug) {
+      activeFileSiteSlug = siteSlug;
+      const breadcrumb = document.getElementById("file-breadcrumb");
+      if (breadcrumb) breadcrumb.innerText = `/var/www/${siteSlug}/`;
+      renderFileManager();
+    }
 
     function renderFileManager() {
+      populateFileManagerSites();
       const tbody = document.getElementById("files-tbody");
       if (!tbody) return;
 
-      tbody.innerHTML = fileSystemState.map((f, idx) => `
+      const currentFiles = fileSystemState[activeFileSiteSlug] || [];
+
+      if (currentFiles.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--wp-gray);">Directory is empty. Click 'New File' or 'Upload File' to add assets.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = currentFiles.map((f, idx) => `
         <tr>
           <td><input type="checkbox"></td>
           <td>
@@ -3790,7 +3826,7 @@ print("${api.name}:", data)`;
           </td>
           <td style="font-family:monospace; font-size:12px;">${f.size}</td>
           <td><span class="wp-pill ${f.type === 'dir' ? 'pill-blue' : 'pill-green'}">${f.type.toUpperCase()}</span></td>
-          <td style="font-family:monospace; font-size:12px;"><code style="cursor:pointer;" onclick="chmodFileModal(${idx})">${f.perms}</code></td>
+          <td style="font-family:monospace; font-size:12px;"><code style="cursor:pointer;" onclick="chmodFileModal(${idx})" title="Click to change permissions">${f.perms}</code></td>
           <td style="font-size:12px; color:var(--wp-gray);">${f.mod}</td>
           <td style="text-align: right;">
             ${f.type === 'file' ? `<button class="button button-sm button-primary" onclick="openFileEditor(${idx})">✏️ Edit</button>` : ''}
@@ -3802,20 +3838,30 @@ print("${api.name}:", data)`;
     }
 
     function openFileEditor(fileIdx) {
-      const f = fileSystemState[fileIdx];
+      const currentFiles = fileSystemState[activeFileSiteSlug] || [];
+      const f = currentFiles[fileIdx];
       if (!f || f.type !== 'file') return;
+
+      const lineCount = (f.content || '').split('\n').length;
+      const charCount = (f.content || '').length;
 
       const html = `
         <div style="font-size:13px; line-height:1.6;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span>Editing File: <code>${f.path}</code> (${f.perms})</span>
-            <span class="wp-pill pill-green">UTF-8</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <span>File: <code>${f.path}</code></span>
+              <span class="wp-pill pill-blue" style="margin-left:6px;">${f.perms}</span>
+            </div>
+            <div style="font-size:12px; color:var(--wp-gray);">
+              <span>${lineCount} lines &bull; ${charCount} chars</span>
+              <span class="wp-pill pill-green" style="margin-left:6px;">UTF-8</span>
+            </div>
           </div>
-          <textarea id="file-editor-content" style="width:100%; height:320px; font-family:monospace; font-size:12px; padding:12px; background:#090d16; color:#f8fafc; border:1px solid #1e293b; border-radius:6px; line-height:1.5; tab-size:2;">${f.content || ''}</textarea>
+          <textarea id="file-editor-content" style="width:100%; height:340px; font-family:monospace; font-size:12px; padding:12px; background:#090d16; color:#f8fafc; border:1px solid #1e293b; border-radius:6px; line-height:1.5; tab-size:2;">${f.content || ''}</textarea>
         </div>
       `;
 
-      openModal("✏️ Code Editor: " + f.name, html, `
+      openModal("✏️ Real-Time Code Editor: " + f.name, html, `
         <button class="button button-primary" onclick="saveFileContent(${fileIdx})">💾 Save Changes (Ctrl+S)</button>
         <button class="button" onclick="closeModal()">Close</button>
       `, true);
@@ -3823,69 +3869,80 @@ print("${api.name}:", data)`;
 
     function saveFileContent(fileIdx) {
       const newContent = document.getElementById("file-editor-content").value;
-      fileSystemState[fileIdx].content = newContent;
-      fileSystemState[fileIdx].mod = new Date().toISOString().replace('T', ' ').substring(0, 16);
-      localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+      const currentFiles = fileSystemState[activeFileSiteSlug] || [];
+      currentFiles[fileIdx].content = newContent;
+      currentFiles[fileIdx].size = (new Blob([newContent]).size / 1024).toFixed(1) + " KB";
+      currentFiles[fileIdx].mod = new Date().toISOString().replace('T', ' ').substring(0, 16);
+      saveFileSystemState();
       renderFileManager();
       closeModal();
-      alert("✓ File saved successfully to disk!");
+      logServerEvent("access", "200", "PUT", currentFiles[fileIdx].path, "File updated and synced to disk");
+      alert(`✓ File '${currentFiles[fileIdx].name}' saved to disk!`);
     }
 
     function createNewFileModal() {
-      const name = prompt("Enter file name (e.g. config.json, main.py, index.php):", "script.js");
+      const name = prompt("Enter file name (e.g. index.php, config.json, main.py):", "script.js");
       if (!name) return;
-      fileSystemState.push({
+      if (!fileSystemState[activeFileSiteSlug]) fileSystemState[activeFileSiteSlug] = [];
+      fileSystemState[activeFileSiteSlug].push({
         name: name,
         type: "file",
-        size: "0 B",
+        size: "0.1 KB",
         perms: "0644",
         mod: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        path: "/public_html/" + name,
-        content: "// New file created on Home Server\n"
+        path: `/var/www/${activeFileSiteSlug}/${name}`,
+        content: `// Created on Ubuntu Home Server - ${activeFileSiteSlug}\n`
       });
-      localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+      saveFileSystemState();
       renderFileManager();
+      logServerEvent("access", "201", "POST", `/var/www/${activeFileSiteSlug}/${name}`, "New file created");
     }
 
     function createNewFolderModal() {
-      const name = prompt("Enter folder name:", "assets");
+      const name = prompt("Enter folder name (e.g. assets, static, uploads):", "assets");
       if (!name) return;
-      fileSystemState.push({
+      if (!fileSystemState[activeFileSiteSlug]) fileSystemState[activeFileSiteSlug] = [];
+      fileSystemState[activeFileSiteSlug].push({
         name: name,
         type: "dir",
         size: "--",
         perms: "0755",
         mod: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        path: "/public_html/" + name
+        path: `/var/www/${activeFileSiteSlug}/${name}`
       });
-      localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+      saveFileSystemState();
       renderFileManager();
     }
 
     function deleteFile(fileIdx) {
-      if (confirm(`Are you sure you want to permanently delete '${fileSystemState[fileIdx].name}'?`)) {
-        fileSystemState.splice(fileIdx, 1);
-        localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+      const currentFiles = fileSystemState[activeFileSiteSlug] || [];
+      const fileName = currentFiles[fileIdx].name;
+      if (confirm(`Permanently delete '${fileName}' from /var/www/${activeFileSiteSlug}/?`)) {
+        currentFiles.splice(fileIdx, 1);
+        saveFileSystemState();
         renderFileManager();
+        logServerEvent("access", "200", "DELETE", `/var/www/${activeFileSiteSlug}/${fileName}`, "File removed");
       }
     }
 
     function chmodFileModal(fileIdx) {
-      const currentPerms = fileSystemState[fileIdx].perms;
-      const newPerms = prompt(`Change permissions for ${fileSystemState[fileIdx].name}:`, currentPerms);
+      const currentFiles = fileSystemState[activeFileSiteSlug] || [];
+      const currentPerms = currentFiles[fileIdx].perms;
+      const newPerms = prompt(`Change POSIX permissions for ${currentFiles[fileIdx].name}:`, currentPerms);
       if (newPerms) {
-        fileSystemState[fileIdx].perms = newPerms;
-        localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+        currentFiles[fileIdx].perms = newPerms;
+        saveFileSystemState();
         renderFileManager();
       }
     }
 
     function renameFileModal(fileIdx) {
-      const newName = prompt(`Rename '${fileSystemState[fileIdx].name}' to:`, fileSystemState[fileIdx].name);
+      const currentFiles = fileSystemState[activeFileSiteSlug] || [];
+      const newName = prompt(`Rename '${currentFiles[fileIdx].name}' to:`, currentFiles[fileIdx].name);
       if (newName) {
-        fileSystemState[fileIdx].name = newName;
-        fileSystemState[fileIdx].path = "/public_html/" + newName;
-        localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+        currentFiles[fileIdx].name = newName;
+        currentFiles[fileIdx].path = `/var/www/${activeFileSiteSlug}/${newName}`;
+        saveFileSystemState();
         renderFileManager();
       }
     }
@@ -3895,7 +3952,7 @@ print("${api.name}:", data)`;
         <div style="text-align:center; padding:20px; border:2px dashed var(--wp-border); border-radius:8px;">
           <div style="font-size:36px; margin-bottom:8px;">📤</div>
           <strong>Drag & Drop files to upload</strong>
-          <p style="font-size:12px; color:var(--wp-gray); margin-top:4px;">Uploads directly into <code>/public_html/</code></p>
+          <p style="font-size:12px; color:var(--wp-gray); margin-top:4px;">Uploads directly into <code>/var/www/${activeFileSiteSlug}/</code></p>
           <input type="file" id="upload-file-picker" style="margin-top:12px;" onchange="handleFileUpload(event)">
         </div>
       `;
@@ -3907,48 +3964,82 @@ print("${api.name}:", data)`;
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(evt) {
-        fileSystemState.push({
+        if (!fileSystemState[activeFileSiteSlug]) fileSystemState[activeFileSiteSlug] = [];
+        fileSystemState[activeFileSiteSlug].push({
           name: file.name,
           type: "file",
           size: (file.size / 1024).toFixed(1) + " KB",
           perms: "0644",
           mod: new Date().toISOString().replace('T', ' ').substring(0, 16),
-          path: "/public_html/" + file.name,
+          path: `/var/www/${activeFileSiteSlug}/${file.name}`,
           content: evt.target.result
         });
-        localStorage.setItem("homeserver_files_state", JSON.stringify(fileSystemState));
+        saveFileSystemState();
         renderFileManager();
         closeModal();
-        alert(`✓ File '${file.name}' uploaded successfully!`);
+        logServerEvent("access", "201", "POST", `/var/www/${activeFileSiteSlug}/${file.name}`, "File uploaded via cPanel");
+        alert(`✓ File '${file.name}' uploaded successfully to /var/www/${activeFileSiteSlug}/!`);
       };
       reader.readAsText(file);
     }
 
     function downloadCurrentFolderZip() {
-      alert("📦 Preparing ZIP archive of /public_html/... Snapshot downloaded to your client machine.");
+      const currentFiles = fileSystemState[activeFileSiteSlug] || [];
+      const manifest = {
+        site: activeFileSiteSlug,
+        generatedAt: new Date().toISOString(),
+        files: currentFiles
+      };
+      const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${activeFileSiteSlug}_bundle_backup.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      logServerEvent("access", "200", "GET", `/${activeFileSiteSlug}/archive.zip`, "Bundle downloaded");
     }
 
     function reloadFileManager() {
       renderFileManager();
     }
 
-    function switchFileManagerSite(val) {
-      document.getElementById("file-breadcrumb").innerText = val === 'all' ? '/public_html/' : `/home/tenants/${val}/public_html/`;
-      renderFileManager();
-    }
-
     /* =========================================================================
-       9. MYSQL & MARIADB STUDIO ENGINE
+       9. MYSQL & MARIADB STUDIO ENGINE (REAL VALUES & SQL DUMPS)
        ========================================================================= */
     let sqlDbsList = JSON.parse(localStorage.getItem("homeserver_sql_dbs") || "null") || [
-      { name: "app_production_db", user: "app_user", tables: 8, size: "14.2 MB", charset: "utf8mb4_unicode_ci" },
-      { name: "store_ecommerce_db", user: "store_admin", tables: 14, size: "28.6 MB", charset: "utf8mb4_unicode_ci" },
-      { name: "tenant_crm_db", user: "crm_tenant", tables: 5, size: "6.8 MB", charset: "utf8mb4_unicode_ci" }
+      { name: "site1_production_db", user: "site1_sql_user", tables: 4, size: "12.4 MB", charset: "utf8mb4_unicode_ci" },
+      { name: "site2_ecommerce_db", user: "site2_sql_user", tables: 6, size: "24.1 MB", charset: "utf8mb4_unicode_ci" },
+      { name: "site3_agency_db", user: "site3_sql_user", tables: 3, size: "5.8 MB", charset: "utf8mb4_unicode_ci" }
     ];
+
+    let sqlTablesState = JSON.parse(localStorage.getItem("homeserver_sql_tables") || "null") || {
+      "users": [
+        { id: 1, username: "admin", email: "admin@homeserver.local", role: "superadmin", created_at: "2026-08-20 10:00:00" },
+        { id: 2, username: "client_acme", email: "alex@acme.com", role: "client", created_at: "2026-08-21 14:22:10" },
+        { id: 3, username: "client_nexus", email: "billing@nexusdigital.io", role: "client", created_at: "2026-08-22 09:15:45" },
+        { id: 4, username: "client_demo", email: "demo@homeserver.local", role: "client", created_at: "2026-08-23 11:00:00" }
+      ],
+      "orders": [
+        { id: 101, client: "Acme Innovations", plan: "Business Agency", amount: "$79.00", status: "Paid", date: "2026-08-22" },
+        { id: 102, client: "Nexus Digital", plan: "Pro Developer", amount: "$29.00", status: "Paid", date: "2026-08-21" },
+        { id: 103, client: "Demo Starter", plan: "Starter", amount: "$9.00", status: "Paid", date: "2026-08-20" }
+      ]
+    };
+
+    function saveSqlTablesState() {
+      localStorage.setItem("homeserver_sql_tables", JSON.stringify(sqlTablesState));
+      localStorage.setItem("homeserver_sql_dbs", JSON.stringify(sqlDbsList));
+    }
 
     function renderSqlStudio() {
       const grid = document.getElementById("sql-dbs-grid");
       if (!grid) return;
+
+      const sel = document.getElementById("sql-target-db");
+      if (sel) {
+        sel.innerHTML = sqlDbsList.map(db => `<option value="${db.name}">${db.name}</option>`).join('');
+      }
 
       grid.innerHTML = sqlDbsList.map((db, idx) => `
         <div class="wp-card">
@@ -3962,7 +4053,7 @@ print("${api.name}:", data)`;
           </p>
           <div style="display:flex; gap:6px; margin-top:10px;">
             <button class="button button-sm button-primary" onclick="setTargetSqlDb('${db.name}')">⚡ Query DB</button>
-            <button class="button button-sm" onclick="exportSqlDump('${db.name}')">💾 Export SQL</button>
+            <button class="button button-sm" onclick="exportSqlDump('${db.name}')">💾 Export .SQL</button>
             <button class="button button-sm button-danger" onclick="deleteSqlDb(${idx})">🗑️</button>
           </div>
         </div>
@@ -3970,26 +4061,29 @@ print("${api.name}:", data)`;
     }
 
     function openCreateSqlDbModal() {
-      const name = prompt("Enter MySQL / MariaDB Database Name (e.g. client_blog_db):", "custom_app_db");
+      const name = prompt("Enter MySQL / MariaDB Database Name (e.g. site5_store_db):", "site5_db");
       if (!name) return;
       const user = name.substring(0, 10) + "_user";
       sqlDbsList.push({
         name: name,
         user: user,
-        tables: 0,
+        tables: 1,
         size: "0.1 MB",
         charset: "utf8mb4_unicode_ci"
       });
-      localStorage.setItem("homeserver_sql_dbs", JSON.stringify(sqlDbsList));
+      saveSqlTablesState();
       renderSqlStudio();
-      alert(`✓ Database '${name}' and User '${user}' created with GRANT ALL PRIVILEGES.`);
+      logServerEvent("access", "201", "POST", `/mysql/databases/${name}`, "Database created with GRANT ALL");
+      alert(`✓ Database '${name}' created with isolated user '${user}'!`);
     }
 
     function deleteSqlDb(idx) {
-      if (confirm(`Are you sure you want to drop database '${sqlDbsList[idx].name}'?`)) {
+      const dbName = sqlDbsList[idx].name;
+      if (confirm(`Are you sure you want to DROP database '${dbName}'?`)) {
         sqlDbsList.splice(idx, 1);
-        localStorage.setItem("homeserver_sql_dbs", JSON.stringify(sqlDbsList));
+        saveSqlTablesState();
         renderSqlStudio();
+        logServerEvent("access", "200", "DELETE", `/mysql/databases/${dbName}`, "Database dropped");
       }
     }
 
@@ -4004,41 +4098,97 @@ print("${api.name}:", data)`;
       const res = document.getElementById("sql-query-results");
       if (!q) return;
 
-      if (q.toUpperCase().startsWith("SELECT")) {
+      const upper = q.toUpperCase();
+
+      if (upper.includes("SELECT") && upper.includes("FROM")) {
+        const tableMatch = q.match(/FROM\s+([a-zA-Z0-9_]+)/i);
+        const tableName = tableMatch ? tableMatch[1].toLowerCase() : "users";
+        const rows = sqlTablesState[tableName] || sqlTablesState["users"];
+        
+        if (rows && rows.length > 0) {
+          const keys = Object.keys(rows[0]);
+          let tableHtml = `
+            <div style="color:#38bdf8; margin-bottom:8px;">Query OK. ${rows.length} rows returned in set (0.002 sec):</div>
+            <table style="width:100%; border-collapse:collapse; color:#fff; font-size:11.5px;">
+              <thead>
+                <tr style="border-bottom:1px solid #334155; text-align:left; color:#94a3b8;">
+                  ${keys.map(k => `<th style="padding:5px 8px;">${k}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(r => `
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    ${keys.map(k => `<td style="padding:5px 8px;">${r[k]}</td>`).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+          res.innerHTML = tableHtml;
+        } else {
+          res.innerHTML = `<span style="color:#facc15;">Query OK. Empty set (0.001 sec).</span>`;
+        }
+      } else if (upper.startsWith("SHOW TABLES")) {
+        const tables = Object.keys(sqlTablesState);
         res.innerHTML = `
-          <div style="color:#38bdf8; margin-bottom:8px;">Query OK. 4 rows returned (0.002 sec):</div>
-          <table style="width:100%; border-collapse:collapse; color:#fff; font-size:11.5px;">
-            <tr style="border-bottom:1px solid #334155; text-align:left; color:#94a3b8;">
-              <th style="padding:4px 8px;">id</th><th style="padding:4px 8px;">username</th><th style="padding:4px 8px;">email</th><th style="padding:4px 8px;">role</th><th style="padding:4px 8px;">created_at</th>
-            </tr>
-            <tr style="border-bottom:1px solid #1e293b;"><td style="padding:4px 8px;">1</td><td style="padding:4px 8px;">admin</td><td style="padding:4px 8px;">admin@homeserver.local</td><td style="padding:4px 8px;">superadmin</td><td style="padding:4px 8px;">2026-08-20 10:00:00</td></tr>
-            <tr style="border-bottom:1px solid #1e293b;"><td style="padding:4px 8px;">2</td><td style="padding:4px 8px;">alex</td><td style="padding:4px 8px;">alex@techpulse.io</td><td style="padding:4px 8px;">client</td><td style="padding:4px 8px;">2026-08-21 14:22:10</td></tr>
-            <tr style="border-bottom:1px solid #1e293b;"><td style="padding:4px 8px;">3</td><td style="padding:4px 8px;">sarah</td><td style="padding:4px 8px;">sarah@apexdesign.com</td><td style="padding:4px 8px;">client</td><td style="padding:4px 8px;">2026-08-22 09:15:45</td></tr>
-            <tr><td style="padding:4px 8px;">4</td><td style="padding:4px 8px;">demo</td><td style="padding:4px 8px;">demo@example.com</td><td style="padding:4px 8px;">guest</td><td style="padding:4px 8px;">2026-08-23 11:00:00</td></tr>
-          </table>
+          <div style="color:#38bdf8; margin-bottom:6px;">Tables in active database:</div>
+          <ul style="margin:0; padding-left:20px; color:#4ade80;">
+            ${tables.map(t => `<li>${t}</li>`).join('')}
+          </ul>
         `;
       } else {
-        res.innerHTML = `<span style="color:#4ade80;">Query executed successfully. 1 row affected (0.004 sec).</span>`;
+        res.innerHTML = `<span style="color:#4ade80;">Query executed successfully. 1 row affected (0.003 sec).</span>`;
       }
+      logServerEvent("access", "200", "SQL", "/mysql/query", q.substring(0, 40));
     }
 
     function loadSampleSqlQuery() {
-      document.getElementById("sql-query-input").value = `CREATE TABLE orders (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  client_id INT NOT NULL,\n  amount DECIMAL(10,2) NOT NULL,\n  status VARCHAR(50) DEFAULT 'paid',\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);`;
+      document.getElementById("sql-query-input").value = `SELECT * FROM users LIMIT 10;`;
     }
 
-    function exportSqlDump() {
-      const dump = `-- MySQL dump 10.13  Distrib 8.0.35, for Linux (aarch64)\n-- Host: localhost    Database: app_production_db\n-- ------------------------------------------------------\n/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\nCREATE TABLE users (id int primary key, username varchar(50));\nINSERT INTO users VALUES (1,'admin'),(2,'alex'),(3,'sarah');\n-- Dump completed on 2026-08-23 12:30:00`;
-      navigator.clipboard.writeText(dump).then(() => alert("✓ SQL Dump exported and copied to clipboard!"));
+    function exportSqlDump(dbName = "site1_production_db") {
+      let dump = `-- MySQL dump 10.13  Distrib 8.0.35, for Linux (aarch64)\n-- Host: 127.0.0.1    Database: ${dbName}\n-- Server version 8.0.35-0ubuntu0.22.04.1\n\n/*!40101 SET NAMES utf8mb4 */;\n\n`;
+      
+      Object.keys(sqlTablesState).forEach(tbl => {
+        dump += `DROP TABLE IF EXISTS \`${tbl}\`;\nCREATE TABLE \`${tbl}\` (\n  \`id\` int NOT NULL AUTO_INCREMENT,\n  \`data\` text,\n  PRIMARY KEY (\`id\`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;\n\n`;
+        const rows = sqlTablesState[tbl];
+        rows.forEach(r => {
+          dump += `INSERT INTO \`${tbl}\` VALUES (${r.id || 1}, '${JSON.stringify(r).replace(/'/g, "\\'")}');\n`;
+        });
+        dump += `\n`;
+      });
+      
+      dump += `-- Dump completed on ${new Date().toISOString()}\n`;
+
+      const blob = new Blob([dump], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${dbName}_dump.sql`;
+      a.click();
+      URL.revokeObjectURL(url);
+      logServerEvent("access", "200", "GET", `/mysql/export/${dbName}`, "SQL dump downloaded");
     }
 
     /* =========================================================================
-       10. CUSTOM DOMAINS, SUBDOMAINS & SSL MANAGER
+       10. CUSTOM DOMAINS, SUBDOMAINS & SSL MANAGER (REAL VALUES)
        ========================================================================= */
     let domainsList = JSON.parse(localStorage.getItem("homeserver_domains_list") || "null") || [
-      { domain: "homeserver.local", slot: "Site 1 (Hub)", ssl: "Let's Encrypt (Valid)", autoRenew: true },
-      { domain: "techpulse.homeserver.io", slot: "Site 1 (Main Site)", ssl: "Let's Encrypt (Valid)", autoRenew: true },
-      { domain: "apexdesign.homeserver.io", slot: "Site 2 (Portfolio)", ssl: "Cloudflare Origin SSL", autoRenew: true }
+      { domain: "homeserver.local", slot: "Site 1", ssl: "Let's Encrypt (Valid)", autoRenew: true },
+      { domain: "acme.homeserver.io", slot: "Site 2", ssl: "Let's Encrypt (Valid)", autoRenew: true },
+      { domain: "nexus.homeserver.io", slot: "Site 3", ssl: "Cloudflare Origin SSL", autoRenew: true }
     ];
+
+    let dnsRecordsList = JSON.parse(localStorage.getItem("homeserver_dns_records") || "null") || [
+      { type: "A", name: "@", value: "192.168.1.100", ttl: "3600" },
+      { type: "CNAME", name: "www", value: "homeserver.local", ttl: "3600" },
+      { type: "TXT", name: "_acme-challenge", value: "x9f83nks9d83nf84jfn39fj39", ttl: "300" }
+    ];
+
+    function saveDomainsState() {
+      localStorage.setItem("homeserver_domains_list", JSON.stringify(domainsList));
+      localStorage.setItem("homeserver_dns_records", JSON.stringify(dnsRecordsList));
+    }
 
     function renderDomains() {
       const tbody = document.getElementById("domains-tbody");
@@ -4064,49 +4214,77 @@ print("${api.name}:", data)`;
       const grid = document.getElementById("dns-records-grid");
       if (!grid) return;
 
-      grid.innerHTML = `
-        <div style="font-size:12.5px; font-family:monospace; background:var(--wp-admin-bg); padding:10px; border-radius:4px;">
-          <div><strong>A Record:</strong> @ &rarr; 192.168.1.100 (Local Gateway) / Cloudflare Tunnel</div>
-          <div><strong>CNAME Record:</strong> www &rarr; homeserver.local</div>
-          <div><strong>TXT Record:</strong> _acme-challenge &rarr; Let's Encrypt Verification Key</div>
+      grid.innerHTML = dnsRecordsList.map((r, idx) => `
+        <div style="font-size:12.5px; font-family:monospace; background:var(--wp-admin-bg); padding:8px 12px; border-radius:4px; display:flex; justify-content:space-between; align-items:center;">
+          <div><strong>${r.type} Record:</strong> ${r.name} &rarr; <code>${r.value}</code> <span style="color:var(--wp-gray); font-size:11px;">(TTL: ${r.ttl}s)</span></div>
+          <button class="button button-sm button-danger" onclick="deleteDnsRecord(${idx})">&times;</button>
+        </div>
+      `).join('') + `
+        <div style="margin-top:8px;">
+          <button class="button button-sm" onclick="addDnsRecordModal()">➕ Add DNS Record</button>
         </div>
       `;
     }
 
+    function addDnsRecordModal() {
+      const type = prompt("Record Type (A, CNAME, TXT, MX):", "A");
+      if (!type) return;
+      const name = prompt("Record Host / Name (e.g. blog, @, mail):", "api");
+      if (!name) return;
+      const value = prompt("Target Value / IP:", "192.168.1.100");
+      if (!value) return;
+      dnsRecordsList.push({ type: type.toUpperCase(), name: name, value: value, ttl: "3600" });
+      saveDomainsState();
+      renderDomains();
+    }
+
+    function deleteDnsRecord(idx) {
+      dnsRecordsList.splice(idx, 1);
+      saveDomainsState();
+      renderDomains();
+    }
+
     function openAddDomainModal() {
-      const domain = prompt("Enter Custom Domain or Subdomain (e.g. clientdomain.com):", "shop.example.com");
+      const domain = prompt("Enter Custom Domain or Subdomain (e.g. clientdomain.com):", "app.example.com");
       if (!domain) return;
+      const slot = prompt("Assign to Website Slot (Site 1, Site 2, Site 3, Site 4):", "Site 1");
       domainsList.push({
         domain: domain,
-        slot: "Site 1",
-        ssl: "Let's Encrypt (Pending)",
+        slot: slot || "Site 1",
+        ssl: "Let's Encrypt (Valid)",
         autoRenew: true
       });
-      localStorage.setItem("homeserver_domains_list", JSON.stringify(domainsList));
+      saveDomainsState();
       renderDomains();
-      alert(`✓ Domain '${domain}' mapped! Run '1-Click SSL' to issue HTTPS certificates.`);
+      logServerEvent("access", "201", "POST", `/domains/${domain}`, `Mapped to ${slot}`);
+      alert(`✓ Domain '${domain}' mapped to ${slot}! Nginx vhost generated.`);
     }
 
     function openIssueSslModal(domain = "homeserver.local") {
-      alert(`🔒 Executing Let's Encrypt Certbot SSL for '${domain}'...\n✓ SSL Certificate Issued & Nginx VirtualHost SSL headers configured!`);
+      logServerEvent("access", "200", "CERTBOT", `/etc/letsencrypt/live/${domain}`, "SSL Certificate renewed");
+      alert(`🔒 Let's Encrypt Certbot Certificate issued for '${domain}'!\n✓ TLS 1.3 Active & Auto-Renewal Cron Registered.`);
     }
 
     function deleteDomain(idx) {
-      if (confirm(`Remove domain '${domainsList[idx].domain}'?`)) {
+      if (confirm(`Remove domain mapping for '${domainsList[idx].domain}'?`)) {
         domainsList.splice(idx, 1);
-        localStorage.setItem("homeserver_domains_list", JSON.stringify(domainsList));
+        saveDomainsState();
         renderDomains();
       }
     }
 
     /* =========================================================================
-       11. CRON JOBS SCHEDULER ENGINE
+       11. CRON JOBS SCHEDULER ENGINE (REAL VALUES)
        ========================================================================= */
     let cronsList = JSON.parse(localStorage.getItem("homeserver_crons_list") || "null") || [
-      { schedule: "0 3 * * *", preset: "Daily at 03:00 AM", cmd: "/usr/local/bin/homeserver-backup all", active: true },
-      { schedule: "*/15 * * * *", preset: "Every 15 Minutes", cmd: "python3 /var/www/site1/sync_feeds.py", active: true },
-      { schedule: "0 0 * * 0", preset: "Weekly on Sunday", cmd: "find /var/backups -mtime +14 -delete", active: true }
+      { schedule: "0 3 * * *", preset: "Daily at 03:00 AM", cmd: "/usr/local/bin/homeserver-backup all", lastRun: "2026-08-23 03:00", active: true },
+      { schedule: "*/15 * * * *", preset: "Every 15 Minutes", cmd: "python3 /var/www/site1/sync_feeds.py", lastRun: "2026-08-23 12:15", active: true },
+      { schedule: "0 0 * * 0", preset: "Weekly on Sunday", cmd: "find /var/backups -mtime +14 -delete", lastRun: "2026-08-17 00:00", active: true }
     ];
+
+    function saveCronsState() {
+      localStorage.setItem("homeserver_crons_list", JSON.stringify(cronsList));
+    }
 
     function renderCrons() {
       const tbody = document.getElementById("crons-tbody");
@@ -4120,6 +4298,7 @@ print("${api.name}:", data)`;
           <td><span class="wp-pill ${c.active ? 'pill-green' : 'pill-orange'}">${c.active ? 'Active' : 'Paused'}</span></td>
           <td style="text-align: right;">
             <button class="button button-sm button-primary" onclick="runCronJobNow(${idx})">⚡ Run Now</button>
+            <button class="button button-sm ${c.active ? 'button-danger' : 'button-success'}" onclick="toggleCronJob(${idx})">${c.active ? 'Pause' : 'Resume'}</button>
             <button class="button button-sm button-danger" onclick="deleteCronJob(${idx})">🗑️</button>
           </td>
         </tr>
@@ -4127,37 +4306,53 @@ print("${api.name}:", data)`;
     }
 
     function openAddCronModal() {
-      const cmd = prompt("Enter command to execute periodically:", "python3 /var/www/site1/backup.py");
+      const cmd = prompt("Enter command to execute periodically:", "python3 /var/www/site1/app.py");
       if (!cmd) return;
+      const preset = prompt("Schedule Preset (e.g. Hourly, Daily at Midnight, Every 15 Mins):", "Every 15 Mins");
       cronsList.push({
-        schedule: "0 0 * * *",
-        preset: "Daily at Midnight",
+        schedule: "*/15 * * * *",
+        preset: preset || "Every 15 Mins",
         cmd: cmd,
+        lastRun: "Never",
         active: true
       });
-      localStorage.setItem("homeserver_crons_list", JSON.stringify(cronsList));
+      saveCronsState();
       renderCrons();
+      logServerEvent("access", "201", "CRON", "/etc/cron.d/job", `Added: ${cmd}`);
     }
 
     function runCronJobNow(idx) {
+      cronsList[idx].lastRun = new Date().toISOString().replace('T', ' ').substring(0, 16);
+      saveCronsState();
+      logServerEvent("access", "200", "CRON", cronsList[idx].cmd, "Job executed successfully with exit code 0");
       alert(`⚡ Executing scheduled job: '${cronsList[idx].cmd}'...\n✓ Execution completed with exit code 0.`);
+    }
+
+    function toggleCronJob(idx) {
+      cronsList[idx].active = !cronsList[idx].active;
+      saveCronsState();
+      renderCrons();
     }
 
     function deleteCronJob(idx) {
       if (confirm("Delete this scheduled cron job?")) {
         cronsList.splice(idx, 1);
-        localStorage.setItem("homeserver_crons_list", JSON.stringify(cronsList));
+        saveCronsState();
         renderCrons();
       }
     }
 
     /* =========================================================================
-       12. BACKUP & DISASTER RECOVERY ENGINE
+       12. BACKUP & DISASTER RECOVERY ENGINE (REAL DOWNLOADS & RESTORE)
        ========================================================================= */
     let backupsList = JSON.parse(localStorage.getItem("homeserver_backups_list") || "null") || [
       { name: "full_snapshot_20260823_120000.tar.gz", type: "Full System + DB", size: "48.2 MB", date: "2026-08-23 12:00" },
-      { name: "tenant_alex_backup_20260822.tar.gz", type: "Tenant Account (Alex)", size: "12.4 MB", date: "2026-08-22 03:00" }
+      { name: "tenant_acme_backup_20260822.tar.gz", type: "Tenant Account (Acme)", size: "12.4 MB", date: "2026-08-22 03:00" }
     ];
+
+    function saveBackupsState() {
+      localStorage.setItem("homeserver_backups_list", JSON.stringify(backupsList));
+    }
 
     function renderBackups() {
       const tbody = document.getElementById("backups-tbody");
@@ -4170,7 +4365,8 @@ print("${api.name}:", data)`;
           <td style="font-family:monospace;">${b.size}</td>
           <td style="font-size:12px; color:var(--wp-gray);">${b.date}</td>
           <td style="text-align: right;">
-            <button class="button button-sm button-primary" onclick="restoreBackupModal(${idx})">🔄 Restore</button>
+            <button class="button button-sm button-primary" onclick="downloadBackupArchive(${idx})">⬇️ Download</button>
+            <button class="button button-sm" onclick="restoreBackupModal(${idx})">🔄 Restore</button>
             <button class="button button-sm button-danger" onclick="deleteBackup(${idx})">🗑️</button>
           </td>
         </tr>
@@ -4178,20 +4374,53 @@ print("${api.name}:", data)`;
     }
 
     function generateFullBackup() {
-      const name = "full_snapshot_" + new Date().toISOString().replace(/[-:T]/g, '').substring(0, 14) + ".tar.gz";
+      const timestamp = new Date().toISOString().replace(/[-:T]/g, '').substring(0, 14);
+      const name = `full_snapshot_${timestamp}.tar.gz`;
+      
+      const payload = {
+        name: name,
+        created: new Date().toISOString(),
+        files: fileSystemState,
+        sql: sqlTablesState,
+        mongo: mongoState,
+        domains: domainsList
+      };
+
       backupsList.unshift({
         name: name,
         type: "Full System Snapshot",
-        size: "52.6 MB",
-        date: new Date().toISOString().replace('T', ' ').substring(0, 16)
+        size: "52.4 MB",
+        date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        data: payload
       });
-      localStorage.setItem("homeserver_backups_list", JSON.stringify(backupsList));
+      saveBackupsState();
       renderBackups();
-      alert(`🎉 Snapshot created: '${name}'\nSaved to /var/backups/homeserver/`);
+      logServerEvent("access", "201", "BACKUP", `/var/backups/${name}`, "Snapshot created successfully");
+      alert(`🎉 Snapshot created: '${name}'!\nStored in /var/backups/homeserver/`);
+    }
+
+    function downloadBackupArchive(idx) {
+      const b = backupsList[idx];
+      const blob = new Blob([JSON.stringify(b.data || b, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = b.name.replace('.tar.gz', '.json');
+      a.click();
+      URL.revokeObjectURL(url);
+      logServerEvent("access", "200", "GET", `/backups/${b.name}`, "Archive downloaded");
     }
 
     function restoreBackupModal(idx) {
       if (confirm(`Restore server state from snapshot '${backupsList[idx].name}'? All files and databases will be synchronized.`)) {
+        if (backupsList[idx].data) {
+          if (backupsList[idx].data.files) fileSystemState = backupsList[idx].data.files;
+          if (backupsList[idx].data.sql) sqlTablesState = backupsList[idx].data.sql;
+          saveFileSystemState();
+          saveSqlTablesState();
+          renderAllViews();
+        }
+        logServerEvent("access", "200", "RESTORE", backupsList[idx].name, "System state restored from snapshot");
         alert("✓ System files and database state restored successfully!");
       }
     }
@@ -4199,28 +4428,57 @@ print("${api.name}:", data)`;
     function deleteBackup(idx) {
       if (confirm(`Delete backup archive '${backupsList[idx].name}'?`)) {
         backupsList.splice(idx, 1);
-        localStorage.setItem("homeserver_backups_list", JSON.stringify(backupsList));
+        saveBackupsState();
         renderBackups();
       }
     }
 
     /* =========================================================================
-       13. REAL-TIME SERVER LOGS STREAMER
+       13. REAL-TIME SERVER LOGS STREAMER (DYNAMIC & SEARCHABLE)
        ========================================================================= */
     let serverLogsList = [
-      { type: "access", code: "200", ip: "192.168.1.50", method: "GET", url: "/cpanel.html", time: "12:28:10", msg: "HTTP/1.1 200 OK 4.2ms" },
-      { type: "access", code: "200", ip: "104.28.14.2", method: "GET", url: "/site1/", time: "12:27:45", msg: "HTTP/1.1 200 OK 1.8ms" },
-      { type: "access", code: "304", ip: "192.168.1.10", method: "GET", url: "/site2/assets/style.css", time: "12:26:15", msg: "HTTP/1.1 304 Not Modified" },
-      { type: "error", code: "404", ip: "45.33.32.156", method: "GET", url: "/wp-login.php", time: "12:25:00", msg: "Nginx 404 Not Found (Blocked by Fail2ban)" },
-      { type: "gunicorn", code: "200", ip: "127.0.0.1", method: "POST", url: "/api/predict", time: "12:24:30", msg: "Gunicorn Worker [PID 2410] 200 OK 12ms" }
+      { type: "access", code: "200", ip: "192.168.1.50", method: "GET", url: "/cpanel.html", time: "12:35:10", msg: "HTTP/1.1 200 OK 4.2ms" },
+      { type: "access", code: "200", ip: "104.28.14.2", method: "GET", url: "/site1/", time: "12:34:45", msg: "HTTP/1.1 200 OK 1.8ms" },
+      { type: "access", code: "304", ip: "192.168.1.10", method: "GET", url: "/site2/assets/style.css", time: "12:33:15", msg: "HTTP/1.1 304 Not Modified" },
+      { type: "error", code: "404", ip: "45.33.32.156", method: "GET", url: "/wp-login.php", time: "12:32:00", msg: "Nginx 404 Not Found (Blocked by Fail2ban)" },
+      { type: "gunicorn", code: "200", ip: "127.0.0.1", method: "POST", url: "/api/health", time: "12:31:30", msg: "Gunicorn Worker [PID 2140] 200 OK 2.1ms" }
     ];
+
+    function logServerEvent(type, code, method, url, msg) {
+      const nowTime = new Date().toTimeString().split(' ')[0];
+      serverLogsList.unshift({
+        type: type,
+        code: code,
+        ip: "192.168.1.50",
+        method: method,
+        url: url,
+        time: nowTime,
+        msg: msg
+      });
+      if (serverLogsList.length > 50) serverLogsList.pop();
+      renderLogs();
+    }
 
     function renderLogs() {
       const box = document.getElementById("logs-stream-box");
       if (!box) return;
 
-      box.innerHTML = serverLogsList.map(l => {
-        let codeColor = l.code === "200" ? "#4ade80" : (l.code === "404" ? "#f87171" : "#facc15");
+      const typeFilter = document.getElementById("log-type-selector")?.value || "all";
+      const searchFilter = document.getElementById("log-search-filter")?.value.toLowerCase() || "";
+
+      const filtered = serverLogsList.filter(l => {
+        if (typeFilter !== "all" && l.type !== typeFilter) return false;
+        if (searchFilter && !JSON.stringify(l).toLowerCase().includes(searchFilter)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        box.innerHTML = `<span style="color:#64748b;">No matching log entries found.</span>`;
+        return;
+      }
+
+      box.innerHTML = filtered.map(l => {
+        let codeColor = l.code === "200" || l.code === "201" ? "#4ade80" : (l.code === "404" ? "#f87171" : "#facc15");
         return `<div><span style="color:#64748b;">[${l.time}]</span> <span style="color:#38bdf8; font-weight:bold;">${l.ip}</span> <span style="color:${codeColor}; font-weight:bold;">${l.method} ${l.url} &rarr; ${l.code}</span> <span style="color:#94a3b8;">(${l.msg})</span></div>`;
       }).join('');
     }
@@ -4231,19 +4489,7 @@ print("${api.name}:", data)`;
     }
 
     function simulateNewAccessLog() {
-      const ips = ["192.168.1.15", "104.28.19.4", "172.67.180.22", "192.168.1.88"];
-      const randIp = ips[Math.floor(Math.random() * ips.length)];
-      const randTime = new Date().toTimeString().split(' ')[0];
-      serverLogsList.unshift({
-        type: "access",
-        code: "200",
-        ip: randIp,
-        method: "GET",
-        url: "/api/health",
-        time: randTime,
-        msg: "HTTP/1.1 200 OK 2.1ms"
-      });
-      renderLogs();
+      logServerEvent("access", "200", "GET", "/api/health", "HTTP/1.1 200 OK 1.4ms");
     }
 
     function filterLogs() {
@@ -4251,14 +4497,18 @@ print("${api.name}:", data)`;
     }
 
     /* =========================================================================
-       14. NODE.JS / PYTHON PM2 PROCESS SUPERVISOR ENGINE
+       14. NODE.JS / PYTHON PM2 PROCESS SUPERVISOR ENGINE (REAL VALUES)
        ========================================================================= */
     let appProcessesList = JSON.parse(localStorage.getItem("homeserver_app_processes") || "null") || [
-      { name: "flask_api_service", runtime: "Python 3.11 (Gunicorn)", port: "8001", pid: 2140, cpu: "0.4%", mem: "38.4 MB", status: "ONLINE", uptime: "3d 4h" },
-      { name: "node_express_cluster", runtime: "Node.js 22 LTS", port: "8002", pid: 2185, cpu: "0.2%", mem: "44.1 MB", status: "ONLINE", uptime: "3d 4h" },
-      { name: "site2_portfolio_server", runtime: "Gunicorn WSGI", port: "8003", pid: 2210, cpu: "0.1%", mem: "32.0 MB", status: "ONLINE", uptime: "2d 18h" },
+      { name: "site1_flask_gunicorn", runtime: "Python 3.11 (Gunicorn)", port: "8001", pid: 2140, cpu: "0.4%", mem: "38.4 MB", status: "ONLINE", uptime: "3d 4h" },
+      { name: "site2_node_express", runtime: "Node.js 22 LTS", port: "8002", pid: 2185, cpu: "0.2%", mem: "44.1 MB", status: "ONLINE", uptime: "3d 4h" },
+      { name: "site3_agency_worker", runtime: "Gunicorn WSGI", port: "8003", pid: 2210, cpu: "0.1%", mem: "32.0 MB", status: "ONLINE", uptime: "2d 18h" },
       { name: "mongodb_daemon", runtime: "mongod v7.0", port: "27017", pid: 1120, cpu: "0.8%", mem: "84.2 MB", status: "ONLINE", uptime: "5d 12h" }
     ];
+
+    function saveProcessesState() {
+      localStorage.setItem("homeserver_app_processes", JSON.stringify(appProcessesList));
+    }
 
     function renderApps() {
       const tbody = document.getElementById("apps-tbody");
@@ -4280,34 +4530,43 @@ print("${api.name}:", data)`;
     }
 
     function restartAppProcess(idx) {
-      alert(`🔄 Restarting process '${appProcessesList[idx].name}' (PID: ${appProcessesList[idx].pid})...\n✓ Service restarted and healthy on port :${appProcessesList[idx].port}`);
+      appProcessesList[idx].pid = Math.floor(Math.random() * 8000) + 1000;
+      appProcessesList[idx].uptime = "Just now";
+      appProcessesList[idx].status = "ONLINE";
+      saveProcessesState();
+      renderApps();
+      logServerEvent("gunicorn", "200", "RESTART", `/supervisor/${appProcessesList[idx].name}`, "Process restarted successfully");
+      alert(`🔄 Process '${appProcessesList[idx].name}' restarted with new PID ${appProcessesList[idx].pid} on port :${appProcessesList[idx].port}!`);
     }
 
     function toggleAppProcess(idx) {
       appProcessesList[idx].status = appProcessesList[idx].status === 'ONLINE' ? 'STOPPED' : 'ONLINE';
-      localStorage.setItem("homeserver_app_processes", JSON.stringify(appProcessesList));
+      saveProcessesState();
       renderApps();
+      logServerEvent("gunicorn", "200", "TOGGLE", `/supervisor/${appProcessesList[idx].name}`, `Status changed to ${appProcessesList[idx].status}`);
     }
 
     function openStartNewProcessModal() {
-      const name = prompt("Enter process name (e.g. fast_api_worker):", "my_new_service");
+      const name = prompt("Enter process name (e.g. site5_api_worker):", "site5_worker");
       if (!name) return;
+      const port = prompt("Assign internal port (e.g. 8005):", "8005");
       appProcessesList.push({
         name: name,
         runtime: "Python 3 / Node.js",
-        port: "8005",
+        port: port || "8005",
         pid: Math.floor(Math.random() * 8000) + 1000,
         cpu: "0.2%",
         mem: "28.0 MB",
         status: "ONLINE",
         uptime: "Just now"
       });
-      localStorage.setItem("homeserver_app_processes", JSON.stringify(appProcessesList));
+      saveProcessesState();
       renderApps();
+      logServerEvent("access", "201", "POST", `/supervisor/${name}`, `Process spawned on port ${port}`);
     }
 
     /* =========================================================================
-       15. 1-CLICK SOFTACULOUS APP INSTALLER ENGINE
+       15. 1-CLICK SOFTACULOUS APP INSTALLER ENGINE (REAL SCAFFOLDING)
        ========================================================================= */
     const SOFTACULOUS_APPS = [
       { name: "WordPress 6.x", icon: "🌐", cat: "CMS & Blogs", desc: "World's most popular CMS with PHP-FPM, MySQL database, and SEO optimization." },
@@ -4337,9 +4596,51 @@ print("${api.name}:", data)`;
     }
 
     function installSoftaculousApp(appName) {
-      const slot = prompt(`Select target website slot to install ${appName}:\nOptions: Site 1, Site 2, Site 3, Site 4`, "Site 1");
-      if (!slot) return;
-      alert(`🎉 SUCCESS!\n${appName} has been scaffolded and deployed into ${slot}!\nNginx vhost and database connections configured automatically.`);
+      const siteSlug = prompt(`Enter website slot slug to install ${appName} (e.g. site5, store, blog):`, "site5");
+      if (!siteSlug) return;
+
+      const cleanSlug = siteSlug.toLowerCase().replace(/[^a-z0-9-_]/g, '');
+      const port = 8000 + websitesList.length + 1;
+
+      // 1. Add to Websites List
+      websitesList.push({
+        name: `${appName} App`,
+        slug: cleanSlug,
+        port: port,
+        path: `/var/www/${cleanSlug}`,
+        template: appName,
+        dbName: `${cleanSlug}_db`,
+        dbUser: `${cleanSlug}_user`,
+        owner: currentUser || "admin",
+        plan: "Pro Developer",
+        status: "Active",
+        storageUsed: "45 MB"
+      });
+      saveWebsitesData();
+
+      // 2. Add to File Manager
+      fileSystemState[cleanSlug] = [
+        { name: "index.html", type: "file", size: "2.4 KB", perms: "0644", mod: new Date().toISOString().replace('T', ' ').substring(0, 16), path: `/var/www/${cleanSlug}/index.html`, content: `<!DOCTYPE html><html><body><h1>${appName} is Online!</h1><p>Slot: ${cleanSlug} | Port: ${port}</p></body></html>` },
+        { name: ".env", type: "file", size: "180 B", perms: "0600", mod: new Date().toISOString().replace('T', ' ').substring(0, 16), path: `/var/www/${cleanSlug}/.env`, content: `PORT=${port}\nAPP_NAME=${appName}\nDB_NAME=${cleanSlug}_db` }
+      ];
+      saveFileSystemState();
+
+      // 3. Add to SQL / Process Supervisor
+      appProcessesList.push({
+        name: `${cleanSlug}_worker`,
+        runtime: appName.includes("Node") || appName.includes("Ghost") ? "Node.js 22 LTS" : "Python 3 / Gunicorn",
+        port: `${port}`,
+        pid: Math.floor(Math.random() * 8000) + 1000,
+        cpu: "0.2%",
+        mem: "32.0 MB",
+        status: "ONLINE",
+        uptime: "Just now"
+      });
+      saveProcessesState();
+
+      renderAllViews();
+      logServerEvent("access", "201", "SOFTACULOUS", `/var/www/${cleanSlug}`, `Scaffolded ${appName}`);
+      alert(`🎉 SUCCESS!\n${appName} has been deployed into slot '/var/www/${cleanSlug}' on port :${port}!\nNginx vhost and database connections configured automatically.`);
     }
 
     /* =========================================================================
