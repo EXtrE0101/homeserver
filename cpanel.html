@@ -259,6 +259,46 @@
     .wp-pill.pill-red { background: #d63638; }
     .wp-pill.pill-purple { background: #8b5cf6; }
 
+    .session-timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: rgba(34, 113, 177, 0.2);
+      color: #72aee6;
+      border: 1px solid rgba(114, 174, 230, 0.35);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: monospace;
+    }
+    .session-timer-badge:hover {
+      background: rgba(34, 113, 177, 0.4);
+      border-color: #72aee6;
+    }
+    .session-timer-badge.warning {
+      background: rgba(219, 166, 23, 0.25);
+      color: #facc15;
+      border-color: #facc15;
+      animation: pulse-session-warning 1.2s infinite;
+    }
+    .session-timer-badge.danger {
+      background: rgba(214, 54, 56, 0.25);
+      color: #f87171;
+      border-color: #f87171;
+      animation: pulse-session-danger 0.8s infinite;
+    }
+    @keyframes pulse-session-warning {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.85; }
+    }
+    @keyframes pulse-session-danger {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(248, 113, 113, 0.6); }
+      50% { transform: scale(1.06); box-shadow: 0 0 14px rgba(248, 113, 113, 0.95); }
+    }
+
     .uri-box {
       background: var(--wp-admin-bg);
       border: 1px solid var(--wp-border);
@@ -449,6 +489,11 @@
       <h2 class="login-title">Ubuntu Home Server</h2>
       <p class="login-subtitle">Commercial Multi-Tenant cPanel & Cloud Portal</p>
       
+      <!-- Gov-Style Inactivity Timeout Notice -->
+      <div id="session-timeout-notice" style="display:none; background:rgba(214, 54, 56, 0.12); border:1px solid #d63638; color:#d63638; border-radius:4px; padding:10px 12px; margin-bottom:16px; font-size:12.5px; text-align:left; line-height:1.4;">
+        <strong>🔒 Session Timed Out:</strong> For your security, your session was automatically ended due to inactivity. Please log in again to continue.
+      </div>
+
       <div id="login-error-box" class="login-error"></div>
 
       <form onsubmit="handleLoginSubmit(event)">
@@ -484,6 +529,10 @@
         <span id="role-tag" class="role-badge">SuperAdmin</span>
       </div>
       <div class="adminbar-right">
+        <!-- Gov Style Inactivity Session Timer -->
+        <span id="session-timer-pill" class="session-timer-badge" onclick="showSessionExtendModal()" title="Government-grade session timeout security. Click to extend session.">
+          ⏱️ <span id="session-timer-text">15:00</span>
+        </span>
         <span class="adminbar-link" onclick="toggleTheme()">🌓 Theme</span>
         <span class="adminbar-link" onclick="refreshLiveTunnel()">🔄 Sync URL</span>
         <span id="logged-in-user" style="font-size:12px; font-weight:600;">👤 admin</span>
@@ -1003,10 +1052,179 @@
       unlockDashboard(user, role, tenantData);
     }
 
+    /* =========================================================================
+       GOVERNMENT-GRADE INACTIVITY SESSION TIMEOUT & AUTO-LOGOUT ENGINE
+       ========================================================================= */
+    const SESSION_TIMEOUT_SECONDS = 15 * 60; // 15 Minutes Inactivity Limit (Gov Standard)
+    const SESSION_WARNING_SECONDS = 60;      // 60 Seconds Remaining Warning Modal
+    let sessionRemainingSeconds = SESSION_TIMEOUT_SECONDS;
+    let sessionCountdownInterval = null;
+    let isSessionWarningActive = false;
+    let lastActivityTimestamp = Date.now();
+
+    function startSessionInactivityTimer() {
+      stopSessionInactivityTimer();
+      sessionRemainingSeconds = SESSION_TIMEOUT_SECONDS;
+      isSessionWarningActive = false;
+      lastActivityTimestamp = Date.now();
+      updateSessionTimerUI();
+
+      sessionCountdownInterval = setInterval(handleSessionTick, 1000);
+      setupUserActivityListeners();
+    }
+
+    function stopSessionInactivityTimer() {
+      if (sessionCountdownInterval) {
+        clearInterval(sessionCountdownInterval);
+        sessionCountdownInterval = null;
+      }
+      removeUserActivityListeners();
+    }
+
+    function handleSessionTick() {
+      if (sessionRemainingSeconds > 0) {
+        sessionRemainingSeconds--;
+        updateSessionTimerUI();
+
+        // 60 Seconds Remaining: Pop Gov-style Security Warning Modal
+        if (sessionRemainingSeconds <= SESSION_WARNING_SECONDS && !isSessionWarningActive) {
+          isSessionWarningActive = true;
+          showSessionExpiringWarningModal();
+        }
+
+        // Update live seconds on warning modal if active
+        if (isSessionWarningActive) {
+          const countEl = document.getElementById("session-warn-countdown");
+          if (countEl) countEl.innerText = sessionRemainingSeconds;
+        }
+      } else {
+        // TIMEOUT EXPIRED (00:00) -> Auto-Logout
+        handleSessionTimeoutExpired();
+      }
+    }
+
+    function updateSessionTimerUI() {
+      const minutes = Math.floor(sessionRemainingSeconds / 60);
+      const seconds = sessionRemainingSeconds % 60;
+      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      const textEl = document.getElementById("session-timer-text");
+      const pillEl = document.getElementById("session-timer-pill");
+      if (textEl) textEl.innerText = formatted;
+
+      if (pillEl) {
+        if (sessionRemainingSeconds <= 60) {
+          pillEl.className = "session-timer-badge danger";
+        } else if (sessionRemainingSeconds <= 120) {
+          pillEl.className = "session-timer-badge warning";
+        } else {
+          pillEl.className = "session-timer-badge";
+        }
+      }
+    }
+
+    function onUserActivityDetected() {
+      // If warning modal is open, require explicit click on "Extend Session"
+      if (isSessionWarningActive) return;
+
+      const now = Date.now();
+      // Throttle activity resets to once every 2 seconds for high performance
+      if (now - lastActivityTimestamp > 2000) {
+        lastActivityTimestamp = now;
+        sessionRemainingSeconds = SESSION_TIMEOUT_SECONDS;
+        updateSessionTimerUI();
+      }
+    }
+
+    const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click', 'wheel'];
+
+    function setupUserActivityListeners() {
+      ACTIVITY_EVENTS.forEach(evt => {
+        window.addEventListener(evt, onUserActivityDetected, { passive: true });
+      });
+    }
+
+    function removeUserActivityListeners() {
+      ACTIVITY_EVENTS.forEach(evt => {
+        window.removeEventListener(evt, onUserActivityDetected);
+      });
+    }
+
+    function showSessionExpiringWarningModal() {
+      const html = `
+        <div style="text-align:center; padding:10px 0; font-size:13.5px; line-height:1.6;">
+          <div style="font-size:44px; margin-bottom:10px; animation:pulse-session-danger 1s infinite;">⚠️</div>
+          <strong style="font-size:16px; color:#d63638; display:block; margin-bottom:8px;">Your Session is About to Expire!</strong>
+          <p style="color:var(--wp-text); margin-bottom:14px;">
+            Due to inactivity, your secure session will automatically terminate in 
+            <strong style="font-size:18px; color:#d63638; font-family:monospace;"><span id="session-warn-countdown">${sessionRemainingSeconds}</span>s</strong> 
+            for government/banking standard security compliance.
+          </p>
+          <p style="font-size:12px; color:var(--wp-gray); margin-bottom:16px;">
+            To keep your active connection and prevent loss of unsaved changes, please click 'Extend Session'.
+          </p>
+        </div>
+      `;
+
+      openModal("🔒 Security Notice: Session Expiring", html, `
+        <button class="button button-danger" onclick="performLogout()">🚪 Logout Now</button>
+        <button class="button button-success" style="font-weight:700;" onclick="extendSessionManually()">🔄 Extend Session (+15 Mins)</button>
+      `);
+    }
+
+    function showSessionExtendModal() {
+      const minutes = Math.floor(sessionRemainingSeconds / 60);
+      const seconds = sessionRemainingSeconds % 60;
+      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      const html = `
+        <div style="font-size:13px; line-height:1.6;">
+          <p style="margin-bottom:12px;">
+            <strong>🔒 Inactivity Session Protection:</strong><br>
+            To protect your server cluster and tenant client data, sessions automatically expire after 15 minutes of continuous inactivity.
+          </p>
+          <div style="background:var(--wp-admin-bg); padding:12px 16px; border-radius:6px; border:1px solid var(--wp-border); margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+            <span>Current Inactivity Countdown:</span>
+            <strong style="font-size:16px; font-family:monospace; color:var(--wp-blue);">${formatted}</strong>
+          </div>
+          <p style="font-size:12px; color:var(--wp-gray);">
+            Any mouse movement, keystroke, or click automatically resets your 15-minute timer.
+          </p>
+        </div>
+      `;
+
+      openModal("⏱️ Inactivity Session Status", html, `
+        <button class="button button-success" onclick="extendSessionManually()">🔄 Reset Timer (+15 Mins)</button>
+        <button class="button" onclick="closeModal()">Close</button>
+      `);
+    }
+
+    function extendSessionManually() {
+      sessionRemainingSeconds = SESSION_TIMEOUT_SECONDS;
+      isSessionWarningActive = false;
+      lastActivityTimestamp = Date.now();
+      updateSessionTimerUI();
+      closeModal();
+    }
+
+    function handleSessionTimeoutExpired() {
+      stopSessionInactivityTimer();
+      closeModal();
+      localStorage.removeItem("homeserver_auth_session");
+      sessionStorage.removeItem("homeserver_auth_session");
+      lockDashboard();
+
+      const notice = document.getElementById("session-timeout-notice");
+      if (notice) notice.style.display = "block";
+    }
+
     function unlockDashboard(username, role, tenantData) {
       currentUser = username;
       currentRole = role;
       tenantScope = tenantData;
+
+      const notice = document.getElementById("session-timeout-notice");
+      if (notice) notice.style.display = "none";
 
       document.getElementById("login-wrap").style.display = "none";
       document.getElementById("dashboard-wrap").style.display = "block";
@@ -1029,14 +1247,17 @@
       loadAllData();
       renderAllViews();
       fetchLiveGist();
+      startSessionInactivityTimer();
     }
 
     function lockDashboard() {
+      stopSessionInactivityTimer();
       document.getElementById("login-wrap").style.display = "flex";
       document.getElementById("dashboard-wrap").style.display = "none";
     }
 
     function performLogout() {
+      stopSessionInactivityTimer();
       localStorage.removeItem("homeserver_auth_session");
       sessionStorage.removeItem("homeserver_auth_session");
       location.reload();

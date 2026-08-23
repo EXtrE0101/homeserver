@@ -229,20 +229,90 @@
       display: none;
     }
 
-    .info-card {
-      background: #111215;
-      border: 1px dashed var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 12.5px;
-      color: var(--muted);
-      text-align: left;
-      margin-bottom: 20px;
-      line-height: 1.5;
+    .session-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(39, 39, 42, 0.85);
+      border: 1px solid #3f3f46;
+      color: #72aee6;
+      font-family: monospace;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+    }
+    .session-badge.warning {
+      background: rgba(234, 179, 8, 0.2);
+      color: #facc15;
+      border-color: #facc15;
+      animation: pulse-portal-warning 1.2s infinite;
+    }
+    .session-badge.danger {
+      background: rgba(239, 68, 68, 0.25);
+      color: #f87171;
+      border-color: #f87171;
+      animation: pulse-portal-danger 0.8s infinite;
+    }
+    @keyframes pulse-portal-warning {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes pulse-portal-danger {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(248, 113, 113, 0.6); }
+      50% { transform: scale(1.06); box-shadow: 0 0 16px rgba(248, 113, 113, 0.9); }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(6px);
+    }
+    .modal-card {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
     }
   </style>
 </head>
 <body>
+
+  <!-- FLOATING GOV SESSION TIMER (When Admin is Authenticated) -->
+  <div id="portal-session-pill" style="display:none; position:fixed; top:16px; right:16px; z-index:100;">
+    <span class="session-badge" id="portal-badge-inner" onclick="showPortalSessionInfo()" title="Government-grade session timeout security. Click to extend.">
+      ⏱️ <span id="portal-session-text">15:00</span>
+      <span style="color:#ef4444; font-size:11px; margin-left:4px;" onclick="portalLogout(event)" title="Logout">🚪</span>
+    </span>
+  </div>
+
+  <!-- SESSION EXPIRING WARNING MODAL -->
+  <div id="portal-warning-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="font-size:42px; margin-bottom:10px; animation:pulse-portal-danger 1s infinite;">⚠️</div>
+      <h3 style="font-size:16px; color:#f87171; margin-bottom:8px;">Session Expiring Soon!</h3>
+      <p style="font-size:13px; color:#a1a1aa; margin-bottom:16px; line-height:1.5;">
+        Due to inactivity, your admin session will expire in 
+        <strong style="color:#f87171; font-family:monospace; font-size:16px;"><span id="portal-warn-secs">60</span>s</strong>.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="primary-btn" onclick="extendPortalSession()">🔄 Extend Session (+15 Mins)</button>
+        <button class="secondary-btn" onclick="portalLogout(event)">🚪 Logout Now</button>
+      </div>
+    </div>
+  </div>
 
   <!-- VIEW 1: CONNECTING / RESOLVING (Default for Public Visitors) -->
   <div class="container" id="view-connecting">
@@ -307,6 +377,11 @@
     <h1>Admin Authentication</h1>
     <p class="subtitle">Enter master password for administrative access</p>
 
+    <!-- Inactivity Timeout Notice -->
+    <div id="portal-session-expired-notice" style="display:none; background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:10px 12px; border-radius:8px; font-size:12.5px; margin-bottom:14px; text-align:left;">
+      <strong>🔒 Session Timed Out:</strong> You were automatically logged out due to 15 minutes of inactivity for security compliance.
+    </div>
+
     <div id="auth-error" class="error-msg">Incorrect password. Please try again.</div>
 
     <form onsubmit="handlePortalAuth(event)">
@@ -337,7 +412,137 @@
     }
 
     function isAuthed() {
-      return localStorage.getItem("homeserver_auth") === "true" || sessionStorage.getItem("homeserver_auth") === "true";
+      const raw = localStorage.getItem("homeserver_auth_session") || sessionStorage.getItem("homeserver_auth_session");
+      if (raw) {
+        try {
+          const s = JSON.parse(raw);
+          return s.expires && s.expires > Date.now();
+        } catch(e) {}
+      }
+      return localStorage.getItem("homeserver_auth") === "true";
+    }
+
+    /* =========================================================================
+       PORTAL INACTIVITY SESSION TIMEOUT (GOV STANDARD - 15 MINS)
+       ========================================================================= */
+    const PORTAL_SESSION_LIMIT = 15 * 60; // 15 Minutes
+    let portalRemainingSecs = PORTAL_SESSION_LIMIT;
+    let portalSessionTimer = null;
+    let isPortalWarnModalOpen = false;
+    let lastPortalUserActivity = Date.now();
+
+    function startPortalSessionWatcher() {
+      if (!isAuthed()) {
+        document.getElementById("portal-session-pill").style.display = "none";
+        return;
+      }
+      document.getElementById("portal-session-pill").style.display = "block";
+      portalRemainingSecs = PORTAL_SESSION_LIMIT;
+      isPortalWarnModalOpen = false;
+      lastPortalUserActivity = Date.now();
+      updatePortalTimerBadge();
+
+      if (portalSessionTimer) clearInterval(portalSessionTimer);
+      portalSessionTimer = setInterval(onPortalSessionTick, 1000);
+
+      ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+        window.addEventListener(evt, onPortalActivity, { passive: true });
+      });
+    }
+
+    function onPortalActivity() {
+      if (isPortalWarnModalOpen) return;
+      const now = Date.now();
+      if (now - lastPortalUserActivity > 2000) {
+        lastPortalUserActivity = now;
+        portalRemainingSecs = PORTAL_SESSION_LIMIT;
+        updatePortalTimerBadge();
+      }
+    }
+
+    function onPortalSessionTick() {
+      if (!isAuthed()) {
+        if (portalSessionTimer) clearInterval(portalSessionTimer);
+        document.getElementById("portal-session-pill").style.display = "none";
+        return;
+      }
+
+      if (portalRemainingSecs > 0) {
+        portalRemainingSecs--;
+        updatePortalTimerBadge();
+
+        if (portalRemainingSecs <= 60 && !isPortalWarnModalOpen) {
+          isPortalWarnModalOpen = true;
+          document.getElementById("portal-warning-modal").style.display = "flex";
+        }
+        if (isPortalWarnModalOpen) {
+          const el = document.getElementById("portal-warn-secs");
+          if (el) el.innerText = portalRemainingSecs;
+        }
+      } else {
+        // Expired Auto Logout
+        handlePortalSessionExpired();
+      }
+    }
+
+    function updatePortalTimerBadge() {
+      const minutes = Math.floor(portalRemainingSecs / 60);
+      const seconds = portalRemainingSecs % 60;
+      const str = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      
+      const txt = document.getElementById("portal-session-text");
+      const badge = document.getElementById("portal-badge-inner");
+      if (txt) txt.innerText = str;
+      if (badge) {
+        if (portalRemainingSecs <= 60) {
+          badge.className = "session-badge danger";
+        } else if (portalRemainingSecs <= 120) {
+          badge.className = "session-badge warning";
+        } else {
+          badge.className = "session-badge";
+        }
+      }
+    }
+
+    function extendPortalSession() {
+      portalRemainingSecs = PORTAL_SESSION_LIMIT;
+      isPortalWarnModalOpen = false;
+      lastPortalUserActivity = Date.now();
+      document.getElementById("portal-warning-modal").style.display = "none";
+      updatePortalTimerBadge();
+    }
+
+    function showPortalSessionInfo() {
+      const minutes = Math.floor(portalRemainingSecs / 60);
+      const seconds = portalRemainingSecs % 60;
+      const str = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      if (confirm(`🔒 Gov-Grade Inactivity Session Active\nTime Remaining: ${str}\n\nDo you want to extend your session by +15 minutes?`)) {
+        extendPortalSession();
+      }
+    }
+
+    function handlePortalSessionExpired() {
+      if (portalSessionTimer) clearInterval(portalSessionTimer);
+      document.getElementById("portal-warning-modal").style.display = "none";
+      document.getElementById("portal-session-pill").style.display = "none";
+      localStorage.removeItem("homeserver_auth");
+      localStorage.removeItem("homeserver_auth_session");
+      sessionStorage.removeItem("homeserver_auth");
+      sessionStorage.removeItem("homeserver_auth_session");
+
+      showAuthBox();
+      const notice = document.getElementById("portal-session-expired-notice");
+      if (notice) notice.style.display = "block";
+    }
+
+    function portalLogout(e) {
+      if (e) e.stopPropagation();
+      if (portalSessionTimer) clearInterval(portalSessionTimer);
+      localStorage.removeItem("homeserver_auth");
+      localStorage.removeItem("homeserver_auth_session");
+      sessionStorage.removeItem("homeserver_auth");
+      sessionStorage.removeItem("homeserver_auth_session");
+      location.reload();
     }
 
     function hideAllViews() {
@@ -368,6 +573,8 @@
           expires: Date.now() + 30 * 24 * 60 * 60 * 1000
         }));
         
+        startPortalSessionWatcher();
+
         if (pendingAdminRoute) {
           executeRedirect(pendingAdminRoute);
         } else {
@@ -402,6 +609,7 @@
     async function initPortal() {
       hideAllViews();
       document.getElementById("view-connecting").style.display = "block";
+      startPortalSessionWatcher();
 
       const urlParams = new URLSearchParams(window.location.search);
       const goParam = urlParams.get("go") || urlParams.get("to");
