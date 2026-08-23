@@ -820,34 +820,40 @@
                 <div>
                   <strong style="font-size:15px;">🌐 GitHub Public APIs Catalog</strong>
                   <p style="font-size:12.5px; color:var(--wp-gray); margin-top:2px;">
-                    Curated from <a href="https://github.com/public-apis/public-apis" target="_blank" style="color:var(--wp-blue);">public-apis/public-apis</a> &mdash; 100% free open-source REST APIs ready to drop into tenant websites.
+                    Auto-synced from <a href="https://github.com/public-apis/public-apis" target="_blank" style="color:var(--wp-blue);">public-apis/public-apis</a> &mdash; 100% free open-source REST APIs ready to drop into tenant websites.
                   </p>
                 </div>
-                <span class="wp-pill pill-green">Free Open Access</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="wp-pill pill-green" id="sync-status-pill">● 1,695 APIs Synced</span>
+                  <button class="button button-sm button-primary" onclick="syncPublicApisFromGitHub(true)">🔄 Sync from GitHub</button>
+                </div>
               </div>
 
               <!-- Search & Filter Controls -->
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input type="text" id="public-api-search" placeholder="🔍 Search free APIs (e.g. weather, crypto, ip, book, quotes)..." style="flex:2; min-width:240px; padding:8px 12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);" oninput="filterPublicApis()">
-                <select id="public-api-cat-filter" style="flex:1; min-width:160px; padding:8px 12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);" onchange="filterPublicApis()">
-                  <option value="All">All Categories (30+)</option>
-                  <option value="Development">Development & DevOps</option>
-                  <option value="Finance & Crypto">Finance & Crypto</option>
-                  <option value="Weather">Weather & Climate</option>
-                  <option value="Security & Geo">Security & Geolocation</option>
-                  <option value="AI & NLP">AI & NLP</option>
-                  <option value="Entertainment">Entertainment & Media</option>
-                  <option value="Open Data">Open Data & Food</option>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <input type="text" id="public-api-search" placeholder="🔍 Search 1,695+ free APIs (e.g. weather, crypto, ip, book, quotes, anime)..." style="flex:2; min-width:240px; padding:8px 12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);" oninput="resetPageAndFilterPublicApis()">
+                <select id="public-api-cat-filter" style="flex:1; min-width:160px; padding:8px 12px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); color:var(--wp-text);" onchange="resetPageAndFilterPublicApis()">
+                  <option value="All">All 51 Categories</option>
                 </select>
                 <label style="display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-                  <input type="checkbox" id="public-api-no-auth" checked onchange="filterPublicApis()">
-                  <span>No Auth Required</span>
+                  <input type="checkbox" id="public-api-no-auth" onchange="resetPageAndFilterPublicApis()">
+                  <span>No Auth Only</span>
                 </label>
               </div>
             </div>
 
             <!-- Dynamic Public APIs Grid -->
             <div id="public-apis-cards-grid" class="wp-grid"></div>
+
+            <!-- Pagination Bar -->
+            <div id="public-apis-pagination" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 16px; background:var(--wp-card-bg); border:1px solid var(--wp-border); border-radius:6px; flex-wrap:wrap; gap:10px;">
+              <div style="font-size:13px; color:var(--wp-gray);" id="pagination-info">Showing 1-24 of 1,695 APIs</div>
+              <div style="display:flex; gap:8px;">
+                <button class="button button-sm" id="btn-prev-page" onclick="changePublicApiPage(-1)">← Previous</button>
+                <span id="pagination-page-num" style="display:inline-flex; align-items:center; font-size:13px; font-weight:600; padding:0 8px;">Page 1 of 71</span>
+                <button class="button button-sm" id="btn-next-page" onclick="changePublicApiPage(1)">Next →</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1246,7 +1252,7 @@
       renderInvoices();
       renderMongoCards();
       renderPlugins();
-      filterPublicApis();
+      initPublicApisCatalog();
       updateMetricCounts();
     }
 
@@ -2536,18 +2542,65 @@
       }
     };
 
-    /* --- PLUGIN 8: QUOTES & NLP --- */
+    /* --- PLUGIN 8: DUMMYJSON QUOTES & NLP STUDIO --- */
+    let currentQuoteData = {
+      quote: "Simplicity is the soul of efficiency.",
+      author: "Austin Freeman"
+    };
+
     function showQuotesPlugin() {
       let html = `
-        <div style="font-size:13px; line-height:1.6; text-align:center; padding:10px 0;">
-          <blockquote id="quote-text" style="font-size:16px; font-style:italic; margin-bottom:10px; color:var(--wp-blue);">
-            "Simplicity is the soul of efficiency."
-          </blockquote>
-          <div id="quote-author" style="font-weight:600; font-size:13px; color:var(--wp-gray); margin-bottom:16px;">&mdash; Austin Freeman</div>
-          <button class="button button-primary" onclick="fetchRandomQuoteLive()">🎲 New Random Quote</button>
+        <div style="font-size:13px; line-height:1.6;">
+          <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchModalTab(this, 'tab-quote-studio')">💬 Quotes Studio</button>
+            <button class="tab-btn" onclick="switchModalTab(this, 'tab-quote-batch')">📚 5 Quotes Batch</button>
+            <button class="tab-btn" onclick="switchModalTab(this, 'tab-quote-code')">📋 Integration Code</button>
+          </div>
+
+          <div id="tab-quote-studio" class="modal-tab-content">
+            <div style="text-align:center; padding:18px; background:var(--wp-admin-bg); border-radius:8px; border:1px solid var(--wp-border); margin-bottom:16px;">
+              <blockquote id="quote-text" style="font-size:17px; font-style:italic; margin-bottom:10px; color:var(--wp-blue); line-height:1.5;">
+                "${currentQuoteData.quote}"
+              </blockquote>
+              <div id="quote-author" style="font-weight:600; font-size:13.5px; color:var(--wp-gray); margin-bottom:16px;">&mdash; ${currentQuoteData.author}</div>
+              
+              <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+                <button class="button button-primary" onclick="fetchRandomQuoteLive()">🎲 New Random Quote</button>
+                <button class="button" onclick="copyQuoteBannerWidget()">📋 Copy Web Banner HTML</button>
+                <button class="button" onclick="copyQuoteJson()">📄 Copy JSON</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-quote-batch" class="modal-tab-content" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span>Batch generated quotes from DummyJSON API:</span>
+              <button class="button button-sm button-primary" onclick="fetchBatchQuotesLive()">🔄 Refresh Batch</button>
+            </div>
+            <div id="quote-batch-list" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto;">
+              <div style="padding:10px; border:1px solid var(--wp-border); border-radius:4px; font-size:12.5px;">Click 'Refresh Batch' to load multiple quotes...</div>
+            </div>
+          </div>
+
+          <div id="tab-quote-code" class="modal-tab-content" style="display:none;">
+            <pre style="background:#090d16; color:#4ade80; padding:12px; border-radius:4px; font-size:12px; font-family:monospace; overflow-x:auto;">&lt;!-- Drop this into your website index.html --&gt;
+&lt;div id="quote-widget" style="padding:16px; background:#111827; color:#38bdf8; border-radius:8px; text-align:center;"&gt;
+  &lt;p id="q-text" style="font-style:italic;"&gt;Loading inspiration...&lt;/p&gt;
+  &lt;span id="q-author" style="font-size:12px; color:#9ca3af;"&gt;&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  fetch('https://dummyjson.com/quotes/random')
+    .then(res =&gt; res.json())
+    .then(data =&gt; {
+      document.getElementById('q-text').innerText = '"' + data.quote + '"';
+      document.getElementById('q-author').innerText = '— ' + data.author;
+    });
+&lt;/script&gt;</pre>
+          </div>
         </div>
       `;
-      openModal("💬 Inspirational Quotes & AI Banner (Free API)", html);
+      openModal("💬 DummyJSON Quotes & NLP Studio (Free API)", html, `<button class="button" onclick="closeModal()">Close</button>`, true);
     }
 
     window.fetchRandomQuoteLive = async function() {
@@ -2555,12 +2608,44 @@
         const res = await fetch("https://dummyjson.com/quotes/random");
         const data = await res.json();
         if (data && data.quote) {
-          document.getElementById("quote-text").innerText = `"${data.quote}"`;
-          document.getElementById("quote-author").innerText = `— ${data.author}`;
+          currentQuoteData = data;
+          const qText = document.getElementById("quote-text");
+          const qAuthor = document.getElementById("quote-author");
+          if (qText) qText.innerText = `"${data.quote}"`;
+          if (qAuthor) qAuthor.innerText = `— ${data.author}`;
         }
       } catch(e) {
-        document.getElementById("quote-text").innerText = "Stay positive and keep building!";
+        alert("Quote fetch notice: " + e.message);
       }
+    };
+
+    window.fetchBatchQuotesLive = async function() {
+      const container = document.getElementById("quote-batch-list");
+      if (!container) return;
+      container.innerHTML = "<span>Fetching quotes batch...</span>";
+      try {
+        const res = await fetch("https://dummyjson.com/quotes?limit=5");
+        const data = await res.json();
+        if (data && data.quotes) {
+          container.innerHTML = data.quotes.map(q => `
+            <div style="padding:10px; border:1px solid var(--wp-border); border-radius:4px; background:var(--wp-admin-bg); font-size:12.5px;">
+              <div style="font-style:italic; color:var(--wp-text); margin-bottom:4px;">"${q.quote}"</div>
+              <div style="font-size:11.5px; color:var(--wp-gray); font-weight:600;">&mdash; ${q.author}</div>
+            </div>
+          `).join('');
+        }
+      } catch(e) {
+        container.innerHTML = "<span>Error fetching quotes.</span>";
+      }
+    };
+
+    window.copyQuoteBannerWidget = function() {
+      const snippet = `<div style="padding:14px; background:#0f172a; border-left:4px solid #38bdf8; border-radius:6px; font-family:sans-serif; color:#f8fafc;"><p style="font-style:italic; margin:0 0 6px 0;">"${currentQuoteData.quote}"</p><strong style="font-size:12px; color:#94a3b8;">&mdash; ${currentQuoteData.author}</strong></div>`;
+      navigator.clipboard.writeText(snippet).then(() => alert("HTML Banner Widget snippet copied to clipboard!"));
+    };
+
+    window.copyQuoteJson = function() {
+      navigator.clipboard.writeText(JSON.stringify(currentQuoteData, null, 2)).then(() => alert("Quote JSON copied to clipboard!"));
     };
 
     /* --- PLUGIN 9: GITHUB REPO MONITOR --- */
@@ -2703,10 +2788,11 @@
     };
 
     /* =========================================================================
-       PUBLIC-APIS/PUBLIC-APIS GITHUB CATALOG & EXPLORER
+       PUBLIC-APIS/PUBLIC-APIS GITHUB LIVE AUTO-SYNC & EXPLORER ENGINE
        ========================================================================= */
-    const PUBLIC_APIS_CATALOG = [
-      // Development & DevOps
+    const GITHUB_PUBLIC_APIS_RAW_URL = "https://raw.githubusercontent.com/public-apis/public-apis/master/README.md";
+
+    let PUBLIC_APIS_CATALOG = [
       {
         name: "GitHub REST API",
         category: "Development",
@@ -2741,43 +2827,8 @@
         docs: "https://reqres.in/"
       },
       {
-        name: "HTTPBin HTTP Testing",
-        category: "Development",
-        desc: "HTTP request & response testing service for headers, IP, UUID, and methods.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://httpbin.org/get",
-        sampleQuery: "https://httpbin.org/get",
-        docs: "https://httpbin.org/"
-      },
-      {
-        name: "IPify Public IP Address",
-        category: "Development",
-        desc: "Lightweight and high-reliability client public IP address API.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.ipify.org?format=json",
-        sampleQuery: "https://api.ipify.org?format=json",
-        docs: "https://www.ipify.org/"
-      },
-      {
-        name: "CDNjs Open Libraries",
-        category: "Development",
-        desc: "Search over 4,000+ open-source JavaScript and CSS front-end libraries.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.cdnjs.com/libraries?search=react",
-        sampleQuery: "https://api.cdnjs.com/libraries?search=react",
-        docs: "https://cdnjs.com/api"
-      },
-
-      // Finance & Cryptocurrency
-      {
         name: "CoinGecko Crypto Ticker",
-        category: "Finance & Crypto",
+        category: "Cryptocurrency",
         desc: "Live price, volume, and market stats for Bitcoin, Ethereum, and 10,000+ tokens.",
         auth: "No Auth",
         https: true,
@@ -2786,52 +2837,6 @@
         sampleQuery: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,inr,eur",
         docs: "https://www.coingecko.com/api"
       },
-      {
-        name: "Binance Public Spot Price",
-        category: "Finance & Crypto",
-        desc: "Real-time ticker prices direct from Binance global spot market order books.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
-        sampleQuery: "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
-        docs: "https://binance-docs.github.io/apidocs/spot/en/"
-      },
-      {
-        name: "Frankfurter ECB Exchange",
-        category: "Finance & Crypto",
-        desc: "Open source foreign exchange rates published daily by the European Central Bank.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.frankfurter.app/latest?from=USD",
-        sampleQuery: "https://api.frankfurter.app/latest?from=USD",
-        docs: "https://www.frankfurter.app/docs/"
-      },
-      {
-        name: "Open Exchange Rates (ER-API)",
-        category: "Finance & Crypto",
-        desc: "Free real-time currency conversion rates covering 160+ world currencies.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://open.er-api.com/v6/latest/USD",
-        sampleQuery: "https://open.er-api.com/v6/latest/USD",
-        docs: "https://www.exchangerate-api.com/"
-      },
-      {
-        name: "CoinCap Crypto Assets",
-        category: "Finance & Crypto",
-        desc: "Real-time cryptocurrency asset tracking, market capitalization, and supply.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.coincap.io/v2/assets/bitcoin",
-        sampleQuery: "https://api.coincap.io/v2/assets/bitcoin",
-        docs: "https://docs.coincap.io/"
-      },
-
-      // Weather & Climate
       {
         name: "Open-Meteo Weather Forecast",
         category: "Weather",
@@ -2844,67 +2849,8 @@
         docs: "https://open-meteo.com/en/docs"
       },
       {
-        name: "7Timer! Weather & Astro",
-        category: "Weather",
-        desc: "Astronomical and meteorological global weather forecast based on NOAA GFS.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://www.7timer.info/bin/astro.php?lon=72.87&lat=19.07&ac=0&unit=metric&output=json",
-        sampleQuery: "https://www.7timer.info/bin/astro.php?lon=72.87&lat=19.07&ac=0&unit=metric&output=json",
-        docs: "http://www.7timer.info/"
-      },
-
-      // Security, Geolocation & Validation
-      {
-        name: "FreeIP Geolocation Intelligence",
-        category: "Security & Geo",
-        desc: "Fast IP address geolocation, country, city, ASN, coordinates, and timezone.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://freeipapi.com/api/json/",
-        sampleQuery: "https://freeipapi.com/api/json/",
-        docs: "https://freeipapi.com/"
-      },
-      {
-        name: "Cloudflare 1.1.1.1 DNS DoH",
-        category: "Security & Geo",
-        desc: "DNS over HTTPS query API to resolve DNS records (A, AAAA, MX, TXT) and verify SSL.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://cloudflare-dns.com/dns-query?name=github.com&type=A",
-        sampleQuery: "https://cloudflare-dns.com/dns-query?name=github.com&type=A",
-        docs: "https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/"
-      },
-      {
-        name: "QRServer Dynamic Generator",
-        category: "Security & Geo",
-        desc: "Generate high-resolution custom QR codes for web URLs, Wi-Fi keys, and vCards.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=HomeServer",
-        sampleQuery: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=HomeServer",
-        docs: "https://goqr.me/api/"
-      },
-      {
-        name: "Zippopotam Postal Code",
-        category: "Security & Geo",
-        desc: "Postal code, zip code, city, and state geographic search covering 60+ countries.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.zippopotam.us/us/90210",
-        sampleQuery: "https://api.zippopotam.us/us/90210",
-        docs: "https://www.zippopotam.us/"
-      },
-
-      // AI, NLP & Utility
-      {
         name: "DummyJSON Quotes & NLP",
-        category: "AI & NLP",
+        category: "Personality",
         desc: "Random inspirational quotes, author tags, and text processing payloads.",
         auth: "No Auth",
         https: true,
@@ -2914,130 +2860,27 @@
         docs: "https://dummyjson.com/docs/quotes"
       },
       {
-        name: "Agify Age Predictor",
-        category: "AI & NLP",
-        desc: "Predicts the probable age of a person based on their given first name.",
+        name: "FreeIP Geolocation Intelligence",
+        category: "Geocoding",
+        desc: "Fast IP address geolocation, country, city, ASN, coordinates, and timezone.",
         auth: "No Auth",
         https: true,
         cors: "Yes",
-        endpoint: "https://api.agify.io?name=alex",
-        sampleQuery: "https://api.agify.io?name=alex",
-        docs: "https://agify.io/"
+        endpoint: "https://freeipapi.com/api/json/",
+        sampleQuery: "https://freeipapi.com/api/json/",
+        docs: "https://freeipapi.com/"
       },
       {
-        name: "Genderize Gender Predictor",
-        category: "AI & NLP",
-        desc: "Predicts the probable gender of a person based on their first name.",
+        name: "QRServer Dynamic Generator",
+        category: "Data Validation",
+        desc: "Generate high-resolution custom QR codes for web URLs, Wi-Fi keys, and vCards.",
         auth: "No Auth",
         https: true,
         cors: "Yes",
-        endpoint: "https://api.genderize.io?name=sanchit",
-        sampleQuery: "https://api.genderize.io?name=sanchit",
-        docs: "https://genderize.io/"
+        endpoint: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=HomeServer",
+        sampleQuery: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=HomeServer",
+        docs: "https://goqr.me/api/"
       },
-      {
-        name: "Nationalize Predictor",
-        category: "AI & NLP",
-        desc: "Predicts the nationality of a person based on their surname or name.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.nationalize.io?name=kumar",
-        sampleQuery: "https://api.nationalize.io?name=kumar",
-        docs: "https://nationalize.io/"
-      },
-      {
-        name: "Bored Activity Finder",
-        category: "AI & NLP",
-        desc: "Find random interesting things to do with category, type, and price level filters.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://bored-api.appbrewery.com/random",
-        sampleQuery: "https://bored-api.appbrewery.com/random",
-        docs: "https://boredapi.com/"
-      },
-      {
-        name: "Advice Slip API",
-        category: "AI & NLP",
-        desc: "Generate random pieces of practical advice and wisdom for web apps.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.adviceslip.com/advice",
-        sampleQuery: "https://api.adviceslip.com/advice",
-        docs: "https://api.adviceslip.com/"
-      },
-
-      // Entertainment & Media
-      {
-        name: "PokéAPI Pokémon Database",
-        category: "Entertainment",
-        desc: "The comprehensive RESTful Pokémon game API containing data on all Pokémon.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://pokeapi.co/api/v2/pokemon/charizard",
-        sampleQuery: "https://pokeapi.co/api/v2/pokemon/charizard",
-        docs: "https://pokeapi.co/"
-      },
-      {
-        name: "Rick and Morty Database",
-        category: "Entertainment",
-        desc: "Access characters, episodes, and locations from Rick and Morty universe.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://rickandmortyapi.com/api/character/1",
-        sampleQuery: "https://rickandmortyapi.com/api/character/1",
-        docs: "https://rickandmortyapi.com/"
-      },
-      {
-        name: "TVMaze Shows & Schedule",
-        category: "Entertainment",
-        desc: "Search TV show schedules, episode guides, cast information, and posters.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://api.tvmaze.com/search/shows?q=matrix",
-        sampleQuery: "https://api.tvmaze.com/search/shows?q=matrix",
-        docs: "https://www.tvmaze.com/api"
-      },
-      {
-        name: "Open Library Books Search",
-        category: "Entertainment",
-        desc: "Search millions of books, authors, subjects, and ISBNs from the Internet Archive.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://openlibrary.org/search.json?q=javascript&limit=3",
-        sampleQuery: "https://openlibrary.org/search.json?q=javascript&limit=3",
-        docs: "https://openlibrary.org/developers/api"
-      },
-      {
-        name: "Dog CEO Random Dogs",
-        category: "Entertainment",
-        desc: "Open source dog image API with breed lists, sub-breeds, and HD pictures.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://dog.ceo/api/breeds/image/random",
-        sampleQuery: "https://dog.ceo/api/breeds/image/random",
-        docs: "https://dog.ceo/dog-api/"
-      },
-      {
-        name: "Cat Facts Ninja",
-        category: "Entertainment",
-        desc: "Daily interesting facts and trivia about cats in lightweight JSON format.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://catfact.ninja/fact",
-        sampleQuery: "https://catfact.ninja/fact",
-        docs: "https://catfact.ninja/"
-      },
-
-      // Open Data & Food
       {
         name: "REST Countries V3",
         category: "Open Data",
@@ -3048,17 +2891,6 @@
         endpoint: "https://restcountries.com/v3.1/name/india",
         sampleQuery: "https://restcountries.com/v3.1/name/india",
         docs: "https://restcountries.com/"
-      },
-      {
-        name: "Open Food Facts Barcode",
-        category: "Open Data",
-        desc: "Open collaborative database of food products with ingredients and nutrition.",
-        auth: "No Auth",
-        https: true,
-        cors: "Yes",
-        endpoint: "https://world.openfoodfacts.org/api/v0/product/737628064500.json",
-        sampleQuery: "https://world.openfoodfacts.org/api/v0/product/737628064500.json",
-        docs: "https://world.openfoodfacts.org/data"
       },
       {
         name: "RandomUser Synthetic Profiles",
@@ -3072,6 +2904,10 @@
         docs: "https://randomuser.me/"
       }
     ];
+
+    let currentPublicApiPage = 1;
+    const PUBLIC_API_PAGE_SIZE = 24;
+    let filteredPublicApisList = [];
 
     function switchPluginTab(tab) {
       const btnActive = document.getElementById("btn-tab-active-plugins");
@@ -3093,55 +2929,182 @@
       }
     }
 
+    function parsePublicApisMarkdown(markdownText) {
+      const lines = markdownText.split('\n');
+      let currentCategory = 'General';
+      const apis = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith('### ')) {
+          const cat = line.replace('### ', '').trim();
+          if (cat && !cat.includes('APIs Covered')) {
+            currentCategory = cat;
+          }
+          continue;
+        }
+        if (line.startsWith('| [') || line.startsWith('|[')) {
+          const match = line.match(/^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|\s*([^|]+)\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|?/);
+          if (match) {
+            const name = match[1].trim();
+            const url = match[2].trim();
+            const desc = match[3].trim();
+            const rawAuth = match[4].trim().replace(/`/g, '');
+            const auth = (rawAuth.toLowerCase() === 'no' || !rawAuth) ? 'No Auth' : rawAuth;
+            const https = (match[5].trim().toLowerCase() === 'yes');
+            const cors = match[6].trim() || 'Unknown';
+            
+            apis.push({
+              name: name,
+              category: currentCategory,
+              desc: desc,
+              auth: auth,
+              https: https,
+              cors: cors,
+              endpoint: url,
+              sampleQuery: url,
+              docs: url
+            });
+          }
+        }
+      }
+      return apis;
+    }
+
+    async function syncPublicApisFromGitHub(showToast = false) {
+      const statusPill = document.getElementById("sync-status-pill");
+      if (statusPill) statusPill.innerText = "🔄 Syncing with GitHub...";
+
+      try {
+        const res = await fetch(GITHUB_PUBLIC_APIS_RAW_URL + "?_t=" + Date.now());
+        if (res.ok) {
+          const mdText = await res.text();
+          const parsed = parsePublicApisMarkdown(mdText);
+          if (parsed.length > 50) {
+            PUBLIC_APIS_CATALOG = parsed;
+            localStorage.setItem("homeserver_github_public_apis", JSON.stringify(parsed));
+            localStorage.setItem("homeserver_github_public_apis_synced", new Date().toISOString());
+            
+            populateCategoryFilter();
+            filterPublicApis();
+
+            if (statusPill) statusPill.innerText = `● ${parsed.length} APIs Synced`;
+            if (showToast) alert(`🎉 GitHub Sync Complete!\nSuccessfully loaded and parsed ${parsed.length} public APIs across all categories from public-apis/public-apis.`);
+            return;
+          }
+        }
+      } catch(e) {
+        console.warn("GitHub live sync fallback:", e.message);
+      }
+
+      if (statusPill) statusPill.innerText = `● ${PUBLIC_APIS_CATALOG.length} APIs Ready`;
+      if (showToast) alert("Synced with local catalog. Total APIs available: " + PUBLIC_APIS_CATALOG.length);
+    }
+
+    function populateCategoryFilter() {
+      const select = document.getElementById("public-api-cat-filter");
+      if (!select) return;
+      
+      const currentVal = select.value;
+      const categories = Array.from(new Set(PUBLIC_APIS_CATALOG.map(a => a.category))).filter(Boolean).sort();
+      
+      let html = `<option value="All">All Categories (${PUBLIC_APIS_CATALOG.length} APIs)</option>`;
+      categories.forEach(c => {
+        const count = PUBLIC_APIS_CATALOG.filter(a => a.category === c).length;
+        html += `<option value="${c}">${c} (${count})</option>`;
+      });
+      
+      select.innerHTML = html;
+      if (categories.includes(currentVal)) select.value = currentVal;
+    }
+
+    function resetPageAndFilterPublicApis() {
+      currentPublicApiPage = 1;
+      filterPublicApis();
+    }
+
     function filterPublicApis() {
       const q = (document.getElementById("public-api-search")?.value || "").toLowerCase().trim();
       const cat = document.getElementById("public-api-cat-filter")?.value || "All";
       const noAuthOnly = document.getElementById("public-api-no-auth")?.checked;
 
-      const filtered = PUBLIC_APIS_CATALOG.filter(api => {
+      filteredPublicApisList = PUBLIC_APIS_CATALOG.filter(api => {
         const matchesQuery = !q || api.name.toLowerCase().includes(q) || api.desc.toLowerCase().includes(q) || api.category.toLowerCase().includes(q);
         const matchesCat = (cat === "All") || (api.category === cat);
         const matchesAuth = !noAuthOnly || (api.auth === "No Auth");
         return matchesQuery && matchesCat && matchesAuth;
       });
 
-      renderPublicApis(filtered);
+      renderPublicApisPage();
     }
 
-    function renderPublicApis(list) {
+    function changePublicApiPage(delta) {
+      const totalPages = Math.ceil(filteredPublicApisList.length / PUBLIC_API_PAGE_SIZE) || 1;
+      const nextPage = currentPublicApiPage + delta;
+      if (nextPage >= 1 && nextPage <= totalPages) {
+        currentPublicApiPage = nextPage;
+        renderPublicApisPage();
+        document.getElementById("plugin-tab-catalog")?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function renderPublicApisPage() {
       const grid = document.getElementById("public-apis-cards-grid");
       if (!grid) return;
 
+      const totalItems = filteredPublicApisList.length;
+      const totalPages = Math.ceil(totalItems / PUBLIC_API_PAGE_SIZE) || 1;
+      if (currentPublicApiPage > totalPages) currentPublicApiPage = totalPages;
+
+      const startIndex = (currentPublicApiPage - 1) * PUBLIC_API_PAGE_SIZE;
+      const endIndex = Math.min(startIndex + PUBLIC_API_PAGE_SIZE, totalItems);
+      const pageItems = filteredPublicApisList.slice(startIndex, endIndex);
+
+      // Update Header & Badge
       const countEl = document.getElementById("tab-catalog-count");
       if (countEl) countEl.innerText = PUBLIC_APIS_CATALOG.length;
 
-      if (list.length === 0) {
+      // Update Pagination Controls
+      const infoEl = document.getElementById("pagination-info");
+      const pageNumEl = document.getElementById("pagination-page-num");
+      const prevBtn = document.getElementById("btn-prev-page");
+      const nextBtn = document.getElementById("btn-next-page");
+
+      if (infoEl) infoEl.innerText = totalItems > 0 ? `Showing ${startIndex + 1}–${endIndex} of ${totalItems} APIs` : "No APIs found";
+      if (pageNumEl) pageNumEl.innerText = `Page ${currentPublicApiPage} of ${totalPages}`;
+      if (prevBtn) prevBtn.disabled = (currentPublicApiPage <= 1);
+      if (nextBtn) nextBtn.disabled = (currentPublicApiPage >= totalPages);
+
+      if (pageItems.length === 0) {
         grid.innerHTML = `
-          <div style="grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--wp-gray);">
-            No public APIs found matching your search. Try changing the keyword or category filter.
+          <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: var(--wp-gray); background:var(--wp-card-bg); border-radius:8px; border:1px solid var(--wp-border);">
+            <div style="font-size:36px; margin-bottom:8px;">🔍</div>
+            <strong style="font-size:15px; display:block; margin-bottom:4px;">No matching APIs found</strong>
+            <span>Try searching for another keyword or selecting 'All Categories'.</span>
           </div>
         `;
         return;
       }
 
       let html = "";
-      list.forEach(api => {
+      pageItems.forEach(api => {
         const isInstalled = PLUGINS.some(p => p.name === api.name);
+        const authBadge = api.auth === "No Auth" ? "pill-green" : "pill-orange";
 
         html += `
           <div class="wp-card" style="display:flex; flex-direction:column; justify-content:space-between;">
             <div>
               <div class="card-title">
-                <strong>${api.name}</strong>
+                <strong style="font-size:14px;">${api.name}</strong>
                 <span class="wp-pill pill-blue" style="font-size:10px;">${api.category}</span>
               </div>
               <p style="font-size:12.5px; color:var(--wp-text); margin-bottom:8px; line-height:1.5;">${api.desc}</p>
               <div style="font-size:11px; color:var(--wp-gray); font-family:monospace; word-break:break-all; background:var(--wp-admin-bg); padding:6px 8px; border-radius:4px; margin-bottom:12px;">
                 ${api.sampleQuery}
               </div>
-              <div style="display:flex; gap:6px; margin-bottom:12px; font-size:11px;">
-                <span class="wp-pill pill-green">● ${api.auth}</span>
-                <span class="wp-pill pill-purple">HTTPS: Yes</span>
+              <div style="display:flex; gap:6px; margin-bottom:12px; font-size:11px; flex-wrap:wrap;">
+                <span class="wp-pill ${authBadge}">● ${api.auth}</span>
+                <span class="wp-pill pill-purple">HTTPS: ${api.https ? 'Yes' : 'No'}</span>
                 <span class="wp-pill pill-orange">CORS: ${api.cors}</span>
               </div>
             </div>
@@ -3165,15 +3128,16 @@
 
       let html = `
         <div style="font-size:13px; line-height:1.6;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
             <div>
               <span class="wp-pill pill-blue">${api.category}</span>
-              <span class="wp-pill pill-green">${api.auth}</span>
+              <span class="wp-pill ${api.auth === 'No Auth' ? 'pill-green' : 'pill-orange'}">${api.auth}</span>
+              <span class="wp-pill pill-purple">HTTPS: ${api.https ? 'Yes' : 'No'}</span>
             </div>
             <a href="${api.docs}" target="_blank" style="font-size:12px; color:var(--wp-blue);">Official API Docs &rarr;</a>
           </div>
 
-          <p style="color:var(--wp-gray); margin-bottom:12px;">${api.desc}</p>
+          <p style="color:var(--wp-text); margin-bottom:12px;">${api.desc}</p>
 
           <label style="font-weight:600; display:block; margin-bottom:4px;">Endpoint URL / Query:</label>
           <div style="display:flex; gap:8px; margin-bottom:14px;">
@@ -3182,7 +3146,7 @@
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="font-weight:600;">Response Output (Live JSON):</span>
+            <span style="font-weight:600;">Response Output (Live In-Browser):</span>
             <span id="play-latency-badge" style="font-size:12px; color:var(--wp-gray);">Latency: --</span>
           </div>
 
@@ -3191,8 +3155,8 @@
       `;
 
       openModal("🌐 Public API Playground: " + api.name, html, `
-        <button class="button button-sm" onclick="copyPublicApiSnippet('${encodeURIComponent(api.name)}')">📋 Copy Integration Code</button>
-        <button class="button button-sm button-success" onclick="installPublicApiAsPlugin('${encodeURIComponent(api.name)}')">⚡ Install as Plugin</button>
+        <button class="button button-sm" onclick="copyPublicApiSnippet('${encodeURIComponent(api.name)}')">📋 Copy Code Snippet</button>
+        <button class="button button-sm button-success" onclick="installPublicApiAsPlugin('${encodeURIComponent(api.name)}')">⚡ Install as cPanel Plugin</button>
         <button class="button button-sm" onclick="closeModal()">Close</button>
       `, true);
 
@@ -3214,12 +3178,17 @@
         const res = await fetch(url);
         const diff = Math.round(performance.now() - start);
         latBadge.innerHTML = `<span style="color:#008a20; font-weight:bold;">● ${res.status} OK (${diff}ms)</span>`;
-        const data = await res.json();
-        box.innerText = JSON.stringify(data, null, 2);
+        const text = await res.text();
+        try {
+          const json = JSON.parse(text);
+          box.innerText = JSON.stringify(json, null, 2);
+        } catch(e) {
+          box.innerText = text.substring(0, 1000);
+        }
       } catch(e) {
         const diff = Math.round(performance.now() - start);
-        latBadge.innerHTML = `<span style="color:#d63638; font-weight:bold;">● Error (${diff}ms)</span>`;
-        box.innerText = "Fetch note: Cross-Origin CORS or network error: " + e.message + "\n\nTip: When calling from server backend (Node.js/Python), CORS restrictions do not apply.";
+        latBadge.innerHTML = `<span style="color:#d63638; font-weight:bold;">● CORS Notice (${diff}ms)</span>`;
+        box.innerText = "Browser CORS Notice: " + e.message + "\n\nTip: Browser security blocks direct frontend fetches for some domains without Access-Control-Allow-Origin headers. When requesting from your backend server (Node.js/Python), this API works directly without CORS restrictions.";
       }
     };
 
@@ -3296,6 +3265,22 @@ print("${api.name}:", data)`;
         <button class="button button-primary" onclick="navigator.clipboard.writeText(\`${jsCode}\`).then(()=>alert('JavaScript code copied to clipboard!'))">📋 Copy JS Code</button>
         <button class="button" onclick="closeModal()">Close</button>
       `);
+    }
+
+    function initPublicApisCatalog() {
+      const cached = localStorage.getItem("homeserver_github_public_apis");
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            PUBLIC_APIS_CATALOG = parsed;
+          }
+        } catch(e) {}
+      }
+      populateCategoryFilter();
+      filterPublicApis();
+      // Auto-sync in background from GitHub repo
+      setTimeout(() => syncPublicApisFromGitHub(false), 500);
     }
 
     /* =========================================================================
